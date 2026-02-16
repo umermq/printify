@@ -7,9 +7,9 @@ const Products = () => {
   const [searchParams] = useSearchParams();
   const categoryFilter = searchParams.get("category");
 
-  const filtered = categoryFilter
-    ? products.filter((p) => p.categorySlug === categoryFilter)
-    : products;
+  const filtered = categoryFilter ?
+  products.filter((p) => p.categorySlug === categoryFilter) :
+  products;
 
   const currentCategory = categories.find((c) => c.slug === categoryFilter);
 
@@ -29,28 +29,28 @@ const Products = () => {
         <Link to="/products">
           <Button variant={!categoryFilter ? "default" : "outline"} size="sm">All</Button>
         </Link>
-        {categories.map((cat) => (
-          <Link key={cat.slug} to={`/products?category=${cat.slug}`}>
+        {categories.map((cat) =>
+        <Link key={cat.slug} to={`/products?category=${cat.slug}`}>
             <Button variant={categoryFilter === cat.slug ? "default" : "outline"} size="sm">
               {cat.icon} {cat.name}
             </Button>
           </Link>
-        ))}
+        )}
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((product, i) => (
-          <motion.div
-            key={product.id}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.06 }}
-          >
+        {filtered.map((product, i) =>
+        <motion.div
+          key={product.id}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: i * 0.06 }}>
+
             <Link
-              to={`/product/${product.id}`}
-              className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-elevated"
-            >
-              <div className="flex h-48 items-center justify-center bg-muted text-6xl">
+            to={`/product/${product.id}`}
+            className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-elevated">
+
+              <div className="flex h-48 items-center justify-center bg-muted text-6xl border-dashed">
                 {product.themes[0]?.preview || "📷"}
               </div>
               <div className="flex flex-1 flex-col p-5">
@@ -64,17 +64,17 @@ const Products = () => {
               </div>
             </Link>
           </motion.div>
-        ))}
+        )}
       </div>
 
-      {filtered.length === 0 && (
-        <div className="py-20 text-center text-muted-foreground">
+      {filtered.length === 0 &&
+      <div className="py-20 text-center text-muted-foreground">
           <p className="text-lg">No products found in this category.</p>
           <Link to="/products" className="mt-4 inline-block text-primary hover:underline">View all products</Link>
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default Products;
