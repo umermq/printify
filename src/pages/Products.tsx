@@ -50,7 +50,7 @@ const Products = () => {
             to={`/product/${product.id}`}
             className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-elevated">
 
-              <div className="flex h-48 items-center justify-center bg-muted text-6xl border-dashed">
+              <div className="flex h-48 items-center justify-center bg-muted text-6xl border-none">
                 {product.themes[0]?.preview || "📷"}
               </div>
               <div className="flex flex-1 flex-col p-5">
