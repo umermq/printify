@@ -16,7 +16,7 @@ const Products = () => {
   return (
     <div className="container py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold md:text-4xl font-sans text-center">
+        <h1 className="text-3xl font-bold md:text-4xl font-sans text-left">
           {currentCategory ? currentCategory.name : "All Products"}
         </h1>
         <p className="mt-2 text-muted-foreground">
