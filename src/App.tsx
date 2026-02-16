@@ -11,7 +11,15 @@ import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Login from "./pages/Login";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminLayout from "./pages/admin/AdminLayout";
+import DashboardPage from "./pages/admin/DashboardPage";
+import OrdersPage from "./pages/admin/OrdersPage";
+import ProductsPage from "./pages/admin/ProductsPage";
+import CategoriesPage from "./pages/admin/CategoriesPage";
+import CustomersPage from "./pages/admin/CustomersPage";
+import PrintShopsPage from "./pages/admin/PrintShopsPage";
+import ReportsPage from "./pages/admin/ReportsPage";
+import SettingsPage from "./pages/admin/SettingsPage";
 import PrintShopDashboard from "./pages/PrintShopDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -31,7 +39,16 @@ const AppLayout = () => {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="products" element={<ProductsPage />} />
+            <Route path="categories" element={<CategoriesPage />} />
+            <Route path="customers" element={<CustomersPage />} />
+            <Route path="print-shops" element={<PrintShopsPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
           <Route path="/print-shop/*" element={<PrintShopDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
