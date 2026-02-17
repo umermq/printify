@@ -20,8 +20,15 @@ import CustomersPage from "./pages/admin/CustomersPage";
 import PrintShopsPage from "./pages/admin/PrintShopsPage";
 import ReportsPage from "./pages/admin/ReportsPage";
 import SettingsPage from "./pages/admin/SettingsPage";
+import CMSPagesPage from "./pages/admin/CMSPagesPage";
+import FAQsAdminPage from "./pages/admin/FAQsAdminPage";
+import ContactSubmissionsPage from "./pages/admin/ContactSubmissionsPage";
 import PrintShopDashboard from "./pages/PrintShopDashboard";
 import NotFound from "./pages/NotFound";
+import AboutPage from "./pages/cms/AboutPage";
+import { PrivacyPolicyPage, TermsPage, RefundPolicyPage, ShippingPolicyPage, ReturnPolicyPage } from "./pages/cms/PolicyPages";
+import FAQsPage from "./pages/cms/FAQsPage";
+import ContactPage from "./pages/cms/ContactPage";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +46,14 @@ const AppLayout = () => {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/refund-policy" element={<RefundPolicyPage />} />
+          <Route path="/shipping-policy" element={<ShippingPolicyPage />} />
+          <Route path="/return-policy" element={<ReturnPolicyPage />} />
+          <Route path="/faqs" element={<FAQsPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<DashboardPage />} />
             <Route path="orders" element={<OrdersPage />} />
@@ -48,6 +63,9 @@ const AppLayout = () => {
             <Route path="print-shops" element={<PrintShopsPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="pages" element={<CMSPagesPage />} />
+            <Route path="faqs" element={<FAQsAdminPage />} />
+            <Route path="contacts" element={<ContactSubmissionsPage />} />
           </Route>
           <Route path="/print-shop/*" element={<PrintShopDashboard />} />
           <Route path="*" element={<NotFound />} />
