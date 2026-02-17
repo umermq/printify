@@ -21,24 +21,24 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="max-w-3xl text-4xl font-extrabold leading-tight text-primary-foreground md:text-6xl"
-          >
+            className="max-w-3xl text-4xl font-extrabold leading-tight text-primary-foreground md:text-6xl">
+
             Turn Your Memories Into Beautiful Prints
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="mt-4 max-w-xl text-lg text-primary-foreground/80 md:text-xl"
-          >
+            className="mt-4 max-w-xl text-lg text-primary-foreground/80 md:text-xl">
+
             Photo books, mugs, t-shirts & gifts — delivered across Pakistan. Cash on Delivery available.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-8 flex flex-wrap justify-center gap-4"
-          >
+            className="mt-8 flex flex-wrap justify-center gap-4">
+
             <Link to="/products">
               <Button size="lg" className="bg-gradient-hero text-primary-foreground shadow-elevated hover:opacity-90">
                 Browse Products <ArrowRight className="ml-2 h-4 w-4" />
@@ -62,18 +62,18 @@ const Index = () => {
         <h2 className="text-center text-3xl font-bold md:text-4xl">Shop by Category</h2>
         <p className="mx-auto mt-2 max-w-md text-center text-muted-foreground">Choose a category and start creating your personalized products</p>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {categories.map((cat, i) => (
-            <motion.div
-              key={cat.slug}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-            >
+          {categories.map((cat, i) =>
+          <motion.div
+            key={cat.slug}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: i * 0.1 }}>
+
               <Link
-                to={`/products?category=${cat.slug}`}
-                className="group flex flex-col items-center rounded-xl border border-border bg-card p-8 shadow-card transition-all hover:-translate-y-1 hover:shadow-elevated"
-              >
+              to={`/products?category=${cat.slug}`}
+              className="group flex flex-col items-center rounded-xl border border-border bg-card p-8 shadow-card transition-all hover:-translate-y-1 hover:shadow-elevated">
+
                 <span className="text-5xl">{cat.icon}</span>
                 <h3 className="mt-4 text-lg font-semibold">{cat.name}</h3>
                 <p className="mt-1 text-center text-sm text-muted-foreground">{cat.description}</p>
@@ -82,7 +82,7 @@ const Index = () => {
                 </span>
               </Link>
             </motion.div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -92,33 +92,33 @@ const Index = () => {
           <h2 className="text-center text-3xl font-bold md:text-4xl">Featured Products</h2>
           <p className="mx-auto mt-2 max-w-md text-center text-muted-foreground">Our most popular custom print products</p>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((product, i) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.08 }}
-              >
+            {featured.map((product, i) =>
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}>
+
                 <Link
-                  to={`/product/${product.id}`}
-                  className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-elevated"
-                >
+                to={`/product/${product.id}`}
+                className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card transition-all hover:-translate-y-1 hover:shadow-elevated">
+
                   <div className="flex h-48 items-center justify-center bg-muted text-6xl">
                     {product.themes[0]?.preview || "📷"}
                   </div>
-                  <div className="flex flex-1 flex-col p-5">
+                  <div className="flex flex-1 flex-col p-5 bg-primary text-primary-foreground">
                     <span className="text-xs font-medium text-primary">{product.category}</span>
                     <h3 className="mt-1 text-lg font-semibold group-hover:text-primary">{product.name}</h3>
                     <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
                     <div className="mt-auto flex items-center justify-between pt-4">
-                      <span className="text-lg font-bold text-foreground">Rs. {product.basePrice.toLocaleString()}</span>
+                      <span className="text-lg font-bold text-primary-foreground">Rs. {product.basePrice.toLocaleString()}</span>
                       <span className="text-xs text-muted-foreground">{product.deliveryDays}</span>
                     </div>
                   </div>
                 </Link>
               </motion.div>
-            ))}
+            )}
           </div>
           <div className="mt-8 text-center">
             <Link to="/products">
@@ -140,8 +140,8 @@ const Index = () => {
           </Link>
         </div>
       </section>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Index;
