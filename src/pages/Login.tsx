@@ -6,13 +6,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const loginSchema = z.object({
+  email: z.string().trim().email("Please enter a valid email address").max(255),
+  password: z.string().min(8, "Password must be at least 8 characters").max(128),
+});
+
+const registerSchema = loginSchema.extend({
+  name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
+  phone: z.string().trim().regex(/^03\d{2}[-\s]?\d{7}$/, "Enter a valid Pakistani phone number (03XX-XXXXXXX)"),
+});
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
+  const [formData, setFormData] = useState({ name: "", phone: "", email: "", password: "" });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const schema = isRegister ? registerSchema : loginSchema;
+    const result = schema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach(err => {
+        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+    setErrors({});
     toast({ title: "Backend required", description: "Enable Lovable Cloud to activate authentication." });
   };
 
@@ -40,15 +64,17 @@ const Login = () => {
                 <Label>Full Name</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input className="pl-10" placeholder="Muhammad Ali" />
+                  <Input className="pl-10" placeholder="Muhammad Ali" value={formData.name} onChange={e => setFormData(f => ({ ...f, name: e.target.value }))} />
                 </div>
+                {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
               </div>
               <div>
                 <Label>Phone Number</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input className="pl-10" placeholder="03XX XXXXXXX" />
+                  <Input className="pl-10" placeholder="03XX-XXXXXXX" value={formData.phone} onChange={e => setFormData(f => ({ ...f, phone: e.target.value }))} />
                 </div>
+                {errors.phone && <p className="text-xs text-destructive mt-1">{errors.phone}</p>}
               </div>
             </>
           )}
@@ -56,15 +82,17 @@ const Login = () => {
             <Label>Email</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input type="email" className="pl-10" placeholder="you@example.com" />
+              <Input type="email" className="pl-10" placeholder="you@example.com" value={formData.email} onChange={e => setFormData(f => ({ ...f, email: e.target.value }))} />
             </div>
+            {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
           </div>
           <div>
             <Label>Password</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input type="password" className="pl-10" placeholder="••••••••" />
+              <Input type="password" className="pl-10" placeholder="••••••••" value={formData.password} onChange={e => setFormData(f => ({ ...f, password: e.target.value }))} />
             </div>
+            {errors.password && <p className="text-xs text-destructive mt-1">{errors.password}</p>}
           </div>
 
           <Button type="submit" className="w-full bg-gradient-hero text-primary-foreground hover:opacity-90" size="lg">

@@ -7,12 +7,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const checkoutSchema = z.object({
+  name: z.string().trim().min(2, "Name must be at least 2 characters").max(100, "Name too long"),
+  phone: z.string().trim().regex(/^03\d{2}[-\s]?\d{7}$/, "Enter a valid Pakistani phone number (03XX-XXXXXXX)"),
+  email: z.string().trim().email("Invalid email address").max(255).or(z.literal("")),
+  address: z.string().trim().min(10, "Address must be at least 10 characters").max(500, "Address too long"),
+  city: z.string().trim().min(2, "City must be at least 2 characters").max(50, "City name too long"),
+  paymentMethod: z.enum(["cod", "online"]),
+});
 
 const Cart = () => {
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [checkingOut, setCheckingOut] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [form, setForm] = useState({
     name: "", phone: "", email: "", address: "", city: "", paymentMethod: "cod" as "cod" | "online",
@@ -20,11 +31,17 @@ const Cart = () => {
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.phone || !form.address || !form.city) {
-      toast({ title: "Please fill all required fields", variant: "destructive" });
+    const result = checkoutSchema.safeParse(form);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach(err => {
+        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
+      });
+      setErrors(fieldErrors);
+      toast({ title: "Please fix the errors below", variant: "destructive" });
       return;
     }
-    // In production this would create an order via backend
+    setErrors({});
     toast({ title: "🎉 Order Placed!", description: "We'll confirm your order via WhatsApp shortly." });
     clearCart();
     navigate("/");
@@ -100,23 +117,28 @@ const Cart = () => {
                 <div>
                   <Label>Full Name *</Label>
                   <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Muhammad Ali" />
+                  {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
                 </div>
                 <div>
                   <Label>Phone Number *</Label>
-                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="03XX XXXXXXX" />
+                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="03XX-XXXXXXX" />
+                  {errors.phone && <p className="text-xs text-destructive mt-1">{errors.phone}</p>}
                 </div>
               </div>
               <div>
                 <Label>Email</Label>
                 <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@example.com" />
+                {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
               </div>
               <div>
                 <Label>Delivery Address *</Label>
                 <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="House #, Street, Area" />
+                {errors.address && <p className="text-xs text-destructive mt-1">{errors.address}</p>}
               </div>
               <div>
                 <Label>City *</Label>
                 <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Lahore" />
+                {errors.city && <p className="text-xs text-destructive mt-1">{errors.city}</p>}
               </div>
             </div>
 
