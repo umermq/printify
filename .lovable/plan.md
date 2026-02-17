@@ -1,124 +1,156 @@
 
-# Admin Panel - Full Module Build
 
-Currently the admin panel is a single component (`AdminDashboard.tsx`) that only renders the Dashboard overview page. Clicking any sidebar link (Orders, Products, Categories, etc.) does nothing meaningful since there are no sub-pages. This plan builds out all 7 remaining admin modules as fully functional UI pages with mock data, proper routing, and CRUD interactions.
+# Phase 2A: CMS Pages, SEO, and Footer Upgrade
 
----
-
-## Architecture
-
-The current `AdminDashboard.tsx` will be refactored into a **layout shell** with nested routing. Each sidebar link will render its own page component inside the main content area.
-
-```text
-src/pages/admin/
-  AdminLayout.tsx        -- sidebar + header + <Outlet />
-  DashboardPage.tsx      -- existing stats/recent orders (moved here)
-  OrdersPage.tsx         -- full order management table
-  ProductsPage.tsx       -- product CRUD with add/edit dialogs
-  CategoriesPage.tsx     -- category management
-  CustomersPage.tsx      -- customer list with details
-  PrintShopsPage.tsx     -- print shop user management
-  ReportsPage.tsx        -- charts (recharts) for revenue, orders
-  SettingsPage.tsx       -- admin settings form
-```
-
-The existing `AdminDashboard.tsx` will become a thin wrapper that imports `AdminLayout`.
+Build the CMS/legal pages, SEO infrastructure, and enhanced footer -- all frontend-only with mock data and admin management UI.
 
 ---
 
-## Module Details
+## What Gets Built
 
-### 1. AdminLayout (Shell)
-- Extract the sidebar and top header from `AdminDashboard.tsx` into a reusable layout
-- Use React Router `<Outlet />` to render child pages
-- Sidebar highlights active route using `useLocation`
-- Collapsible sidebar (existing behavior preserved)
+### 1. Static/CMS Pages (Customer-Facing)
 
-### 2. Dashboard Page (existing, relocated)
-- Move the stats cards and recent orders table into `DashboardPage.tsx`
-- No logic changes, just file reorganization
+Create 8 new pages under `src/pages/cms/`:
 
-### 3. Orders Page
-- Full-width table showing all orders with columns: Order ID, Customer, Product, Status, Amount, Date, Payment Method, Actions
-- Status filter tabs (All, Pending, Confirmed, In Design, Shipped, Delivered, Cancelled)
-- Search bar for order ID or customer name
-- Click an order row to open a **detail dialog** showing:
-  - Order info and customer details
-  - Uploaded images (placeholder thumbnails)
-  - Status update dropdown (admin can change status through the workflow)
-  - Assign to Print Shop dropdown
-  - Tracking number input
-  - Cancel order button
-- Mock data: 15-20 sample orders covering all statuses
+- **About Us** (`/about`) -- Company story, mission, team section
+- **Privacy Policy** (`/privacy-policy`) -- Standard privacy policy content
+- **Terms & Conditions** (`/terms`) -- Terms of service content
+- **Refund Policy** (`/refund-policy`) -- Refund rules and process
+- **Shipping Policy** (`/shipping-policy`) -- Delivery info, timelines, COD details
+- **Return Policy** (`/return-policy`) -- Return process and conditions
+- **FAQs** (`/faqs`) -- Accordion-style, categorized, with search
+- **Contact Us** (`/contact`) -- Contact form, WhatsApp, phone, email, Google Maps embed, office address
 
-### 4. Products Page
-- Grid/table view of all products with image placeholder, name, category, price, stock status
-- "Add Product" button opens a dialog/form with fields: name, category (select), description, base price, sizes (dynamic add/remove), themes (dynamic add/remove), delivery days, featured toggle
-- Edit button on each row opens same form pre-filled
-- Delete button with confirmation dialog
-- Category filter dropdown
-- Uses existing `products` data as initial mock state managed via `useState`
+Each page reads its content from a shared CMS data store (React context with mock data), making it ready for backend integration later.
 
-### 5. Categories Page
-- Card grid showing each category with icon, name, description, product count
-- "Add Category" dialog with: name, slug (auto-generated), description, icon picker (emoji input)
-- Edit and delete actions on each card
-- Uses existing `categories` data as initial mock state
+### 2. Admin CMS Management
 
-### 6. Customers Page
-- Table with columns: Name, Email, Phone, City, Orders Count, Total Spent, Status (Active/Inactive), Joined Date
-- Search by name/email
-- Click row to see customer detail dialog showing: profile info, order history list, account status toggle (activate/deactivate)
-- Mock data: 10-12 sample customers
+Add a new **Pages** section to the admin sidebar (`/admin/pages`):
 
-### 7. Print Shops Page
-- Table listing print shop users: Name, Email, Location, Assigned Jobs, Completed Jobs, Rejection Rate, Status
-- "Add Print Shop" dialog with: name, email, phone, location, password
-- Edit/delete actions
-- Click to view performance: completed vs rejected jobs count
-- Mock data: 4-5 sample print shops
+- Table listing all CMS pages with title, URL slug, status (Published/Draft)
+- Click to edit a page: rich text content (textarea for now), SEO meta title, meta description, custom slug, publish/draft toggle
+- Add/delete FAQ entries with category assignment from `/admin/faqs`
 
-### 8. Reports Page
-- Revenue chart (line chart, monthly) using recharts (already installed)
-- Orders by category (bar chart)
-- COD vs Online payment ratio (pie chart)
-- Orders by city (bar chart)
-- Date range filter (this month / last 3 months / this year)
-- Summary stat cards at the top: Total Revenue, Total Orders, Average Order Value, Top Category
+Add a **Contact Submissions** section (`/admin/contacts`):
 
-### 9. Settings Page
-- Simple form with sections:
-  - **Store Info**: Store name, contact email, phone, address
-  - **Delivery Settings**: Default delivery time, shipping fee
-  - **Payment Settings**: Toggle COD, toggle JazzCash, toggle Easypaisa
-  - **Notifications**: Toggle email notifications, toggle WhatsApp alerts
-- Save button (shows toast on save)
+- Table showing form submissions: name, phone, email, message, date
+- Mark as read/unread
 
----
+### 3. FAQ System
 
-## Routing Changes
+- Customer-facing: accordion layout with category tabs and search filter
+- Admin-facing: CRUD for FAQ items with category management
+- Mock data: 10-15 FAQs across 3-4 categories (Orders, Payments, Delivery, Products)
 
-Update `App.tsx` to use nested routes:
+### 4. Contact Form
 
-```text
-/admin           -> AdminLayout wrapping DashboardPage
-/admin/orders    -> OrdersPage
-/admin/products  -> ProductsPage
-/admin/categories -> CategoriesPage
-/admin/customers -> CustomersPage
-/admin/print-shops -> PrintShopsPage
-/admin/reports   -> ReportsPage
-/admin/settings  -> SettingsPage
-```
+- Fields: name, phone (Pakistan format validation), email, message
+- Zod validation on all fields
+- On submit: saves to local state, shows success toast
+- Displays: WhatsApp click-to-chat, business email, phone, address
+- Google Maps embed (iframe with Lahore location placeholder)
+
+### 5. SEO Infrastructure
+
+- Create a reusable `SEOHead` component using `document.title` and meta tag updates via `useEffect`
+- Each page sets: title, meta description, Open Graph tags (og:title, og:description, og:type, og:image), Twitter card tags
+- Update `index.html` with proper default meta tags for PrintPK
+- Add breadcrumb navigation component shown on product pages, CMS pages, and category listings
+- Update `robots.txt` with proper sitemap reference
+- Create a `/sitemap.xml` static file listing all routes
+- Add structured data (JSON-LD) for products and organization
+
+### 6. Footer Upgrade
+
+Expand the existing footer in `src/components/Layout.tsx` to include:
+
+- **Products column**: Photo Books, Mugs, T-Shirts, Gifts
+- **Company column**: About Us, How It Works, Careers
+- **Policies column**: Privacy, Terms, Refund, Shipping, Return
+- **Support column**: Contact Us, FAQs, WhatsApp, Phone, Email
+- **Social links row**: Facebook, Instagram, TikTok, YouTube (with proper icons)
+- **Trust badges row**: COD badge, Secure Payment badge, Delivery Timeline badge
+- **Payment icons row**: COD, JazzCash, Easypaisa
+- Copyright line
 
 ---
 
 ## Technical Details
 
-- **State Management**: Each page uses local `useState` with mock data (no backend yet). CRUD operations update local state and show toast notifications.
-- **UI Components Used**: Dialog, Table, Input, Select, Badge, Tabs, Switch, Button, Card -- all from existing shadcn/ui library already installed.
-- **Charts**: recharts (already installed) for Reports page -- LineChart, BarChart, PieChart.
-- **Animations**: framer-motion for page enter animations (consistent with existing dashboard style).
-- **Files created**: 9 new files in `src/pages/admin/`
-- **Files modified**: `AdminDashboard.tsx` (simplified to import layout), `App.tsx` (nested routing)
-- **No new dependencies needed** -- everything uses already-installed packages.
+### New Files Created (~14 files)
+
+```text
+src/pages/cms/AboutPage.tsx
+src/pages/cms/PrivacyPolicyPage.tsx
+src/pages/cms/TermsPage.tsx
+src/pages/cms/RefundPolicyPage.tsx
+src/pages/cms/ShippingPolicyPage.tsx
+src/pages/cms/ReturnPolicyPage.tsx
+src/pages/cms/FAQsPage.tsx
+src/pages/cms/ContactPage.tsx
+src/components/SEOHead.tsx
+src/components/Breadcrumbs.tsx
+src/data/cms-content.ts          -- mock CMS page content + FAQ data
+src/pages/admin/CMSPagesPage.tsx  -- admin page management
+src/pages/admin/FAQsAdminPage.tsx -- admin FAQ CRUD
+src/pages/admin/ContactSubmissionsPage.tsx -- admin contact form submissions
+```
+
+### Files Modified (~4 files)
+
+- `src/App.tsx` -- add routes for all new pages + admin sub-routes
+- `src/components/Layout.tsx` -- expanded footer
+- `src/pages/admin/AdminLayout.tsx` -- add Pages, FAQs, Contacts to sidebar
+- `index.html` -- update default meta tags for PrintPK branding
+
+### Dependencies
+
+No new dependencies needed. Uses existing: `framer-motion`, `lucide-react`, `zod`, `shadcn/ui` components (Accordion, Tabs, Dialog, Input, Badge, Table).
+
+### SEOHead Component Pattern
+
+```text
+<SEOHead
+  title="About Us | PrintPK"
+  description="Learn about Pakistan's trusted photo printing service"
+  ogImage="/og-default.png"
+  path="/about"
+/>
+```
+
+Sets document.title and updates/creates meta tags in document.head via useEffect. Cleans up on unmount.
+
+### Breadcrumbs Pattern
+
+```text
+<Breadcrumbs items={[
+  { label: "Home", to: "/" },
+  { label: "Products", to: "/products" },
+  { label: "Photo Books" }
+]} />
+```
+
+Renders a horizontal breadcrumb trail with structured data (JSON-LD BreadcrumbList).
+
+### CMS Data Structure
+
+Each CMS page stored as:
+```text
+{
+  slug: "about",
+  title: "About Us",
+  metaTitle: "About Us | PrintPK",
+  metaDescription: "Learn about PrintPK...",
+  content: "Rich text content here...",
+  status: "published" | "draft",
+  updatedAt: "2026-02-17"
+}
+```
+
+### Admin Sidebar Update
+
+Add 3 new links under a "Content" section separator:
+- Pages (FileText icon) -> /admin/pages
+- FAQs (HelpCircle icon) -> /admin/faqs
+- Contact Submissions (MessageSquare icon) -> /admin/contacts
+
