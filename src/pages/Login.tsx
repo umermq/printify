@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Camera, Mail, Lock, User, Phone } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Mail, Lock, User, Phone } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -41,70 +40,105 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center px-4 py-10">
+    <div className="flex min-h-[90vh] items-center justify-center bg-background px-4 py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-elevated"
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="w-full max-w-md"
       >
-        <div className="mb-6 flex flex-col items-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-hero">
-            <Camera className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <h1 className="mt-4 text-2xl font-bold">{isRegister ? "Create Account" : "Welcome Back"}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {isRegister ? "Sign up to start ordering" : "Login to your PrintPK account"}
+        {/* Header */}
+        <div className="mb-10 text-center">
+          <Link to="/" className="inline-block">
+            <span className="font-serif text-2xl font-semibold tracking-widest text-foreground">PrintPK</span>
+            <span className="accent-line mx-auto mt-1" />
+          </Link>
+          <h1 className="mt-6 font-serif text-3xl font-medium text-foreground">
+            {isRegister ? "Create Account" : "Welcome Back"}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {isRegister ? "Sign up to start your first order" : "Sign in to your PrintPK account"}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isRegister && (
-            <>
-              <div>
-                <Label>Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input className="pl-10" placeholder="Muhammad Ali" value={formData.name} onChange={e => setFormData(f => ({ ...f, name: e.target.value }))} />
+        {/* Card */}
+        <div className="rounded-xl border border-border bg-background p-8 shadow-luxury">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {isRegister && (
+              <>
+                <div>
+                  <Label className="text-xs tracking-widest uppercase text-muted-foreground">Full Name</Label>
+                  <div className="relative mt-1.5">
+                    <User className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" strokeWidth={1.5} />
+                    <Input
+                      className="pl-9 bg-background border-border focus-visible:ring-gold"
+                      placeholder="Muhammad Ali"
+                      value={formData.name}
+                      onChange={e => setFormData(f => ({ ...f, name: e.target.value }))}
+                    />
+                  </div>
+                  {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
                 </div>
-                {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
-              </div>
-              <div>
-                <Label>Phone Number</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input className="pl-10" placeholder="03XX-XXXXXXX" value={formData.phone} onChange={e => setFormData(f => ({ ...f, phone: e.target.value }))} />
+                <div>
+                  <Label className="text-xs tracking-widest uppercase text-muted-foreground">Phone Number</Label>
+                  <div className="relative mt-1.5">
+                    <Phone className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" strokeWidth={1.5} />
+                    <Input
+                      className="pl-9 bg-background border-border focus-visible:ring-gold"
+                      placeholder="03XX-XXXXXXX"
+                      value={formData.phone}
+                      onChange={e => setFormData(f => ({ ...f, phone: e.target.value }))}
+                    />
+                  </div>
+                  {errors.phone && <p className="mt-1 text-xs text-destructive">{errors.phone}</p>}
                 </div>
-                {errors.phone && <p className="text-xs text-destructive mt-1">{errors.phone}</p>}
+              </>
+            )}
+
+            <div>
+              <Label className="text-xs tracking-widest uppercase text-muted-foreground">Email</Label>
+              <div className="relative mt-1.5">
+                <Mail className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" strokeWidth={1.5} />
+                <Input
+                  type="email"
+                  className="pl-9 bg-background border-border focus-visible:ring-gold"
+                  placeholder="you@example.com"
+                  value={formData.email}
+                  onChange={e => setFormData(f => ({ ...f, email: e.target.value }))}
+                />
               </div>
-            </>
-          )}
-          <div>
-            <Label>Email</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input type="email" className="pl-10" placeholder="you@example.com" value={formData.email} onChange={e => setFormData(f => ({ ...f, email: e.target.value }))} />
+              {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email}</p>}
             </div>
-            {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
-          </div>
-          <div>
-            <Label>Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input type="password" className="pl-10" placeholder="••••••••" value={formData.password} onChange={e => setFormData(f => ({ ...f, password: e.target.value }))} />
+
+            <div>
+              <Label className="text-xs tracking-widest uppercase text-muted-foreground">Password</Label>
+              <div className="relative mt-1.5">
+                <Lock className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" strokeWidth={1.5} />
+                <Input
+                  type="password"
+                  className="pl-9 bg-background border-border focus-visible:ring-gold"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={e => setFormData(f => ({ ...f, password: e.target.value }))}
+                />
+              </div>
+              {errors.password && <p className="mt-1 text-xs text-destructive">{errors.password}</p>}
             </div>
-            {errors.password && <p className="text-xs text-destructive mt-1">{errors.password}</p>}
+
+            <button type="submit" className="btn-luxury mt-2 w-full flex items-center justify-center">
+              {isRegister ? "Create Account" : "Sign In"}
+            </button>
+          </form>
+
+          <div className="mt-6 border-t border-border pt-6 text-center text-sm text-muted-foreground">
+            {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
+            <button
+              onClick={() => setIsRegister(!isRegister)}
+              className="text-gold hover:opacity-75 font-medium transition-opacity"
+            >
+              {isRegister ? "Sign In" : "Sign Up"}
+            </button>
           </div>
-
-          <Button type="submit" className="w-full bg-gradient-hero text-primary-foreground hover:opacity-90" size="lg">
-            {isRegister ? "Create Account" : "Login"}
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
-          <button onClick={() => setIsRegister(!isRegister)} className="font-medium text-primary hover:underline">
-            {isRegister ? "Login" : "Sign Up"}
-          </button>
         </div>
       </motion.div>
     </div>
