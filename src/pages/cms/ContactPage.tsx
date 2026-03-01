@@ -81,11 +81,11 @@ const ContactPage = () => {
           <div className="rounded-xl border border-border bg-card p-6 shadow-card">
             <h3 className="mb-4 font-heading text-lg font-semibold">Get in Touch</h3>
             <div className="space-y-4">
-              <a href="https://wa.me/923001234567" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-foreground text-muted-foreground">
-                <MessageCircle className="h-5 w-5 text-green-500" /> WhatsApp: +92 300 1234567
+              <a href="https://wa.me/923334442957" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-foreground text-muted-foreground">
+                <MessageCircle className="h-5 w-5 text-green-500" /> WhatsApp: +92 333 4442957
               </a>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Phone className="h-5 w-5" /> +92 42 3456 7890
+                <Phone className="h-5 w-5" /> +92 42 3334442957
               </div>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Mail className="h-5 w-5" /> info@printpk.com

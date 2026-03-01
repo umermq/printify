@@ -190,8 +190,8 @@ export const Footer = () => (
         <div>
           <h4 className="mb-4 section-label !text-gold">Support</h4>
           <div className="flex flex-col gap-2.5 text-sm text-primary-foreground/50">
-            <a href="https://wa.me/923001234567" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors duration-300">WhatsApp Us</a>
-            <span>+92 42 3456 7890</span>
+            <a href="https://wa.me/923334442957" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors duration-300">WhatsApp Us</a>
+            <span>+92 42 3334442957</span>
             <span>info@printpk.com</span>
             <span>Mon–Sat: 10am – 8pm</span>
           </div>

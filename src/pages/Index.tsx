@@ -130,8 +130,12 @@ const Index = () => {
                   className="group block overflow-hidden rounded-xl bg-card shadow-luxury transition-all duration-500 hover:shadow-luxury-hover hover:-translate-y-1"
                 >
                   {/* Image area */}
-                  <div className="relative flex h-52 items-center justify-center overflow-hidden bg-muted text-6xl">
-                    <span className="transition-transform duration-700 group-hover:scale-110">{cat.icon}</span>
+                  <div className="relative h-52 overflow-hidden bg-muted">
+                    {cat.image ? (
+                      <img src={cat.image} alt={cat.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-6xl">{cat.icon}</div>
+                    )}
                     <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-card/80 to-transparent" />
                   </div>
                   {/* Content */}
@@ -201,10 +205,14 @@ const Index = () => {
                   className="group block overflow-hidden rounded-xl bg-background border border-border shadow-luxury transition-all duration-500 hover:shadow-luxury-hover hover:border-gold/30"
                 >
                   {/* Product image */}
-                  <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden bg-card text-7xl">
-                    <span className="transition-transform duration-700 group-hover:scale-105">
-                      {product.themes[0]?.preview || "📷"}
-                    </span>
+                  <div className="relative aspect-[3/4] overflow-hidden bg-card">
+                    {product.image ? (
+                      <img src={product.image} alt={product.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-7xl">
+                        {product.themes[0]?.preview || "📷"}
+                      </div>
+                    )}
                   </div>
                   {/* Product info */}
                   <div className="p-5">
