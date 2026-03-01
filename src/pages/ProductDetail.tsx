@@ -73,10 +73,14 @@ const ProductDetail = () => {
           {/* Left — Image Gallery */}
           <div className="flex flex-col gap-4">
             {/* Main image */}
-            <div className="flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-card text-9xl shadow-luxury">
-              <span className="transition-transform duration-500 hover:scale-105">
-                {product.themes[selectedTheme]?.preview || "📷"}
-              </span>
+            <div className="aspect-square overflow-hidden rounded-xl bg-card shadow-luxury">
+              {product.image ? (
+                <img src={product.image} alt={product.name} className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-9xl">
+                  {product.themes[selectedTheme]?.preview || "📷"}
+                </div>
+              )}
             </div>
             {/* Thumbnail strip — theme selector as gallery */}
             <div className="flex gap-3">

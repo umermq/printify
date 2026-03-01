@@ -80,10 +80,14 @@ const Products = () => {
                 className="group block overflow-hidden rounded-xl border border-border bg-background shadow-luxury transition-all duration-500 hover:shadow-luxury-hover hover:border-gold/30"
               >
                 {/* Image */}
-                <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden bg-card text-7xl">
-                  <span className="transition-transform duration-700 group-hover:scale-105">
-                    {product.themes[0]?.preview || "📷"}
-                  </span>
+                <div className="relative aspect-[3/4] overflow-hidden bg-card">
+                  {product.image ? (
+                    <img src={product.image} alt={product.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-7xl">
+                      {product.themes[0]?.preview || "📷"}
+                    </div>
+                  )}
                 </div>
                 {/* Info */}
                 <div className="p-5">
