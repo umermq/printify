@@ -1,58 +1,71 @@
 
 
-# Replace Emoji Placeholders with Professional Images + Update WhatsApp Number
+# Hero Banners + PixelCraft Logo Redesign
 
-## Changes
+Rebrand from "PrintPK" to "PixelCraft" with a designed SVG logo and add elegant hero banners to every page that currently lacks one.
 
-### 1. Add professional product images to `src/data/products.ts`
+---
 
-Replace empty `image` fields and emoji `preview` fields with high-quality Unsplash URLs for each product and category:
+## 1. PixelCraft Logo
 
-- **Categories** — add proper `image` URLs:
-  - Photo Books → elegant photo book on marble surface
-  - Custom Mugs → styled ceramic mug with photo
-  - T-Shirts → custom printed t-shirt flat lay
-  - Gift Items → photo cushion/keychain styled shot
+Create an inline SVG logo component (`src/components/Logo.tsx`) featuring:
+- A minimal geometric mark: 4 small squares arranged in a 2x2 pixel grid pattern (referencing "pixel") with matte gold color
+- "PixelCraft" wordmark in Cormorant Garamond, tracking-widest
+- Used everywhere: header, footer, login page, mobile drawer
 
-- **Products** — add `image` field URLs and keep theme previews as text labels (since themes represent design options, not photos):
-  - `pb-1` Classic Photo Book → hardcover photo book image
-  - `pb-2` Wedding Album → luxury wedding album image
-  - `mug-1` Photo Mug → ceramic mug product shot
-  - `mug-2` Magic Mug → color-changing mug image
-  - `ts-1` Custom T-Shirt → custom printed tee image
-  - `gift-1` Photo Cushion → custom cushion image
-  - `gift-2` Photo Keychain → acrylic keychain image
+## 2. Brand Name Update
 
-### 2. Update `src/pages/Products.tsx`
+Search-and-replace "PrintPK" with "PixelCraft" across all files: Layout header/footer, Index page, SEO titles, CMS content, meta tags in index.html, sitemap, About page, Contact page, FAQ page, etc.
 
-Replace the emoji placeholder in the product card image area (line 83-87) with an `<img>` tag that uses `product.image`, falling back to a styled placeholder div if no image exists.
+## 3. Hero Banners for All Pages
 
-### 3. Update `src/pages/Index.tsx`
+Currently only the homepage and products page have headers. Add a consistent luxury hero banner to every customer-facing page:
 
-- **Category cards** (line 133-134): Replace `{cat.icon}` emoji with `<img src={cat.image}>` 
-- **Best Sellers** (line 204-208): Replace emoji placeholder with `<img src={product.image}>`
+**Shared `PageHero` component** (`src/components/PageHero.tsx`):
+- Full-width section with `bg-card` background
+- Gold section label (uppercase, tracking-widest)
+- Large serif heading
+- Optional subtitle in muted text
+- Optional Unsplash background image with warm overlay
+- Breadcrumbs integrated below the heading
+- Consistent padding: `py-20`
 
-### 4. Update `src/pages/ProductDetail.tsx`
+**Pages to update:**
+| Page | Label | Heading | Background Image |
+|---|---|---|---|
+| Products | Category or "ALL PRODUCTS" | Dynamic title | Soft print studio image |
+| About | "OUR STORY" | "About PixelCraft" | Workshop/studio image |
+| Contact | "GET IN TOUCH" | "Contact Us" | Elegant desk image |
+| FAQs | "HELP CENTER" | "Frequently Asked Questions" | — |
+| Privacy Policy | "LEGAL" | "Privacy Policy" | — |
+| Terms | "LEGAL" | "Terms & Conditions" | — |
+| Refund Policy | "POLICIES" | "Refund Policy" | — |
+| Shipping Policy | "POLICIES" | "Shipping Policy" | — |
+| Return Policy | "POLICIES" | "Return Policy" | — |
+| Cart | "YOUR CART" | "Shopping Cart" | — |
+| Login | "ACCOUNT" | "Welcome Back" | — |
 
-Replace the main product image emoji (the large centered span) and theme thumbnail emojis with the product image. Main gallery shows `product.image`, thumbnails remain as theme selectors with text labels.
-
-### 5. Update WhatsApp number across 3 files
-
-Change `923001234567` → `923334442957` and display number `+92 42 3456 7890` → `+92 42 3334442957` in:
-
-- `src/components/WhatsAppButton.tsx` (line 5)
-- `src/components/Layout.tsx` (lines 193-194)
-- `src/pages/cms/ContactPage.tsx` (lines 84-88)
-
-### Files Modified (6 files)
+## 4. Files Summary
 
 | File | Change |
 |---|---|
-| `src/data/products.ts` | Add Unsplash image URLs to all products and categories |
-| `src/pages/Products.tsx` | Render `<img>` instead of emoji in product cards |
-| `src/pages/Index.tsx` | Render `<img>` in category cards and best sellers |
-| `src/pages/ProductDetail.tsx` | Render `<img>` in main gallery |
-| `src/components/WhatsAppButton.tsx` | Update WhatsApp number |
-| `src/components/Layout.tsx` | Update phone/WhatsApp number in footer |
-| `src/pages/cms/ContactPage.tsx` | Update phone/WhatsApp number |
+| `src/components/Logo.tsx` | **New** — SVG logo component |
+| `src/components/PageHero.tsx` | **New** — reusable hero banner |
+| `src/components/Layout.tsx` | Use Logo component, rename to PixelCraft |
+| `src/pages/Index.tsx` | Rename brand references |
+| `src/pages/Products.tsx` | Use PageHero instead of plain header |
+| `src/pages/ProductDetail.tsx` | Brand name update |
+| `src/pages/Cart.tsx` | Add PageHero |
+| `src/pages/Login.tsx` | Add PageHero, use Logo |
+| `src/pages/cms/AboutPage.tsx` | Add PageHero |
+| `src/pages/cms/ContactPage.tsx` | Add PageHero, update brand |
+| `src/pages/cms/FAQsPage.tsx` | Add PageHero |
+| `src/pages/cms/PolicyPages.tsx` | Add PageHero |
+| `src/data/cms-content.ts` | Replace PrintPK → PixelCraft in content |
+| `index.html` | Update title and meta tags |
+| `public/sitemap.xml` | Update brand name |
+| `src/components/SEOHead.tsx` | No structural change |
+| `src/components/WhatsAppButton.tsx` | Brand name if referenced |
+
+**New files: 2. Modified files: ~14. No new packages.**
 
