@@ -60,15 +60,12 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 lg:py-20">
-      <div className="container">
-        {/* Header */}
-        <div className="mb-10 border-b border-border pb-6">
-          <span className="section-label mb-2 block">{checkingOut ? "Checkout" : "Shopping Cart"}</span>
-          <h1 className="font-serif text-4xl font-medium text-foreground">
-            {checkingOut ? "Delivery Details" : "Your Selection"}
-          </h1>
-        </div>
+    <div className="min-h-screen bg-background">
+      <PageHero
+        label={checkingOut ? "Checkout" : "Your Cart"}
+        title={checkingOut ? "Delivery Details" : "Shopping Cart"}
+      />
+      <div className="container py-12 lg:py-20">
 
         {!checkingOut ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid gap-8 lg:grid-cols-3">
