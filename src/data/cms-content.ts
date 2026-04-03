@@ -30,15 +30,15 @@ export const cmsPages: CMSPage[] = [
   {
     slug: "about",
     title: "About Us",
-    metaTitle: "About Us | PrintPK – Pakistan's Trusted Photo Printing",
-    metaDescription: "Learn about PrintPK, Pakistan's leading custom photo printing service. Quality prints, fast delivery, nationwide COD.",
+    metaTitle: "About Us | PixelCraft – Pakistan's Trusted Photo Printing",
+    metaDescription: "Learn about PixelCraft, Pakistan's leading custom photo printing service. Quality prints, fast delivery, nationwide COD.",
     content: `<h2>Our Story</h2>
-<p>PrintPK was founded in 2022 in Lahore with a simple mission: make custom photo printing accessible and affordable for every Pakistani. From photo books capturing wedding memories to personalized mugs for Eid gifts, we turn your cherished moments into tangible keepsakes.</p>
+<p>PixelCraft was founded in 2022 in Lahore with a simple mission: make custom photo printing accessible and affordable for every Pakistani. From photo books capturing wedding memories to personalized mugs for Eid gifts, we turn your cherished moments into tangible keepsakes.</p>
 
 <h2>Our Mission</h2>
 <p>We believe every memory deserves to be preserved beautifully. Our state-of-the-art printing technology combined with premium materials ensures your photos look stunning on every product we create.</p>
 
-<h2>Why Choose PrintPK?</h2>
+<h2>Why Choose PixelCraft?</h2>
 <ul>
 <li><strong>Premium Quality:</strong> We use professional-grade printers and materials for vibrant, long-lasting prints.</li>
 <li><strong>Fast Delivery:</strong> Most orders are delivered within 3-7 business days across Pakistan.</li>
@@ -54,8 +54,8 @@ export const cmsPages: CMSPage[] = [
   {
     slug: "privacy-policy",
     title: "Privacy Policy",
-    metaTitle: "Privacy Policy | PrintPK",
-    metaDescription: "Read PrintPK's privacy policy. We protect your personal information and photos with industry-standard security.",
+    metaTitle: "Privacy Policy | PixelCraft",
+    metaDescription: "Read PixelCraft's privacy policy. We protect your personal information and photos with industry-standard security.",
     content: `<h2>Information We Collect</h2>
 <p>We collect information you provide when placing orders: name, phone number, email, delivery address, and photos you upload for printing. We also collect basic usage data to improve our services.</p>
 
@@ -74,17 +74,17 @@ export const cmsPages: CMSPage[] = [
 <p>We implement industry-standard security measures to protect your personal information and photos from unauthorized access.</p>
 
 <h2>Contact Us</h2>
-<p>For privacy-related inquiries, contact us at privacy@printpk.com or WhatsApp +92 300 1234567.</p>`,
+<p>For privacy-related inquiries, contact us at privacy@pixelcraft.pk or WhatsApp +92 300 1234567.</p>`,
     status: "published",
     updatedAt: "2026-02-17",
   },
   {
     slug: "terms",
     title: "Terms & Conditions",
-    metaTitle: "Terms & Conditions | PrintPK",
-    metaDescription: "Review PrintPK's terms and conditions for using our custom photo printing services in Pakistan.",
+    metaTitle: "Terms & Conditions | PixelCraft",
+    metaDescription: "Review PixelCraft's terms and conditions for using our custom photo printing services in Pakistan.",
     content: `<h2>Acceptance of Terms</h2>
-<p>By using PrintPK's website and services, you agree to these terms and conditions. Please read them carefully before placing an order.</p>
+<p>By using PixelCraft's website and services, you agree to these terms and conditions. Please read them carefully before placing an order.</p>
 
 <h2>Orders & Pricing</h2>
 <p>All prices are listed in Pakistani Rupees (PKR) and include applicable taxes. Prices may change without notice, but confirmed orders will be honored at the quoted price.</p>
@@ -93,18 +93,18 @@ export const cmsPages: CMSPage[] = [
 <p>We strive for the highest print quality. Colors may vary slightly between screen display and printed output due to differences in display calibration and printing processes.</p>
 
 <h2>Intellectual Property</h2>
-<p>You must own or have rights to all images you upload. PrintPK is not responsible for copyright infringement by customers. We reserve the right to refuse printing copyrighted or inappropriate content.</p>
+<p>You must own or have rights to all images you upload. PixelCraft is not responsible for copyright infringement by customers. We reserve the right to refuse printing copyrighted or inappropriate content.</p>
 
 <h2>Limitation of Liability</h2>
-<p>PrintPK's liability is limited to the order value. We are not liable for indirect damages, loss of data, or delays caused by courier services.</p>`,
+<p>PixelCraft's liability is limited to the order value. We are not liable for indirect damages, loss of data, or delays caused by courier services.</p>`,
     status: "published",
     updatedAt: "2026-02-17",
   },
   {
     slug: "refund-policy",
     title: "Refund Policy",
-    metaTitle: "Refund Policy | PrintPK",
-    metaDescription: "PrintPK's refund policy for custom photo printed products. Learn about our satisfaction guarantee.",
+    metaTitle: "Refund Policy | PixelCraft",
+    metaDescription: "PixelCraft's refund policy for custom photo printed products. Learn about our satisfaction guarantee.",
     content: `<h2>Our Guarantee</h2>
 <p>We want you to be 100% satisfied with your order. If there's a quality issue with your printed product, we'll make it right.</p>
 
@@ -131,8 +131,8 @@ export const cmsPages: CMSPage[] = [
   {
     slug: "shipping-policy",
     title: "Shipping Policy",
-    metaTitle: "Shipping Policy | PrintPK – Nationwide Delivery",
-    metaDescription: "PrintPK delivers custom printed products across Pakistan. COD available. 3-7 business days delivery.",
+    metaTitle: "Shipping Policy | PixelCraft – Nationwide Delivery",
+    metaDescription: "PixelCraft delivers custom printed products across Pakistan. COD available. 3-7 business days delivery.",
     content: `<h2>Delivery Coverage</h2>
 <p>We deliver to all major cities and towns across Pakistan through our trusted courier partners.</p>
 
@@ -157,8 +157,8 @@ export const cmsPages: CMSPage[] = [
   {
     slug: "return-policy",
     title: "Return Policy",
-    metaTitle: "Return Policy | PrintPK",
-    metaDescription: "PrintPK's return policy for custom photo printed products. Easy returns within 7 days.",
+    metaTitle: "Return Policy | PixelCraft",
+    metaDescription: "PixelCraft's return policy for custom photo printed products. Easy returns within 7 days.",
     content: `<h2>Return Eligibility</h2>
 <p>Since our products are custom-made with your photos, returns are only accepted for quality defects or incorrect orders.</p>
 
