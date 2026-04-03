@@ -2,6 +2,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { products, categories } from "@/data/products";
 import { ArrowRight } from "lucide-react";
+import { PageHero } from "@/components/PageHero";
 
 const Products = () => {
   const [searchParams] = useSearchParams();
@@ -15,25 +16,19 @@ const Products = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Page Header */}
-      <div className="bg-card border-b border-border py-16">
-        <div className="container">
-          <span className="section-label mb-4 block">
-            {currentCategory ? currentCategory.name : "All Products"}
-          </span>
-          <h1 className="font-serif text-4xl font-medium md:text-5xl text-foreground">
-            {currentCategory ? currentCategory.name : "Our Collections"}
-          </h1>
-          <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-            {currentCategory
-              ? currentCategory.description
-              : "Browse our full collection of custom printed products crafted with precision."}
-          </p>
-        </div>
-      </div>
+      <PageHero
+        label={currentCategory ? currentCategory.name : "All Products"}
+        title={currentCategory ? currentCategory.name : "Our Collections"}
+        subtitle={
+          currentCategory
+            ? currentCategory.description
+            : "Browse our full collection of custom printed products crafted with precision."
+        }
+        backgroundImage="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1920&q=80"
+      />
 
       <div className="container py-12">
-        {/* Category Filter — minimal text tabs */}
+        {/* Category Filter */}
         <div className="mb-12 flex flex-wrap items-center gap-0 border-b border-border">
           <Link
             to="/products"
@@ -79,7 +74,6 @@ const Products = () => {
                 to={`/product/${product.id}`}
                 className="group block overflow-hidden rounded-xl border border-border bg-background shadow-luxury transition-all duration-500 hover:shadow-luxury-hover hover:border-gold/30"
               >
-                {/* Image */}
                 <div className="relative aspect-[3/4] overflow-hidden bg-card">
                   {product.image ? (
                     <img src={product.image} alt={product.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
@@ -89,7 +83,6 @@ const Products = () => {
                     </div>
                   )}
                 </div>
-                {/* Info */}
                 <div className="p-5">
                   <span className="section-label">{product.category}</span>
                   <h3 className="mt-2 font-serif text-lg font-medium text-foreground group-hover:text-foreground">
