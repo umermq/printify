@@ -19,7 +19,7 @@ const trustItems = [
 
 const testimonials = [
   {
-    quote: "The wedding album PrintPK made for us is absolutely stunning. The quality surpassed every expectation we had — it feels like a true heirloom.",
+    quote: "The wedding album PixelCraft made for us is absolutely stunning. The quality surpassed every expectation we had — it feels like a true heirloom.",
     name: "Aisha & Hamza",
     location: "Lahore",
   },

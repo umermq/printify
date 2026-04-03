@@ -8,7 +8,7 @@ interface SEOHeadProps {
   type?: string;
 }
 
-const BASE_URL = "https://printpk.com";
+const BASE_URL = "https://pixelcraft.pk";
 
 const setMeta = (attr: string, key: string, content: string) => {
   let el = document.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;

@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { Logo } from "@/components/Logo";
+import { PageHero } from "@/components/PageHero";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -40,7 +42,13 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-[90vh] items-center justify-center bg-background px-4 py-12">
+    <div className="min-h-screen bg-background">
+      <PageHero
+        label="Account"
+        title={isRegister ? "Create Account" : "Welcome Back"}
+        subtitle={isRegister ? "Sign up to start your first order" : "Sign in to your PixelCraft account"}
+      />
+      <div className="flex items-center justify-center px-4 py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -49,16 +57,7 @@ const Login = () => {
       >
         {/* Header */}
         <div className="mb-10 text-center">
-          <Link to="/" className="inline-block">
-            <span className="font-serif text-2xl font-semibold tracking-widest text-foreground">PrintPK</span>
-            <span className="accent-line mx-auto mt-1" />
-          </Link>
-          <h1 className="mt-6 font-serif text-3xl font-medium text-foreground">
-            {isRegister ? "Create Account" : "Welcome Back"}
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {isRegister ? "Sign up to start your first order" : "Sign in to your PrintPK account"}
-          </p>
+          <Logo size="lg" linkTo="/" className="justify-center" />
         </div>
 
         {/* Card */}
@@ -141,6 +140,7 @@ const Login = () => {
           </div>
         </div>
       </motion.div>
+      </div>
     </div>
   );
 };
