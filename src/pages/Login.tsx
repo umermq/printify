@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { Logo } from "@/components/Logo";
+import { PageHero } from "@/components/PageHero";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
