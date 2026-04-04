@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const emptyProduct: Omit<Product, "id"> = {
   name: "", category: "", categorySlug: "", description: "", basePrice: 0,
-  sizes: [{ label: "", price: 0 }], themes: [{ id: "", name: "", preview: "" }],
+  sizes: [{ label: "", price: 0 }], themes: [{ id: "", name: "", preview: "", image: "" }],
   deliveryDays: "3-5 days", image: "", featured: false,
 };
 
@@ -178,7 +178,7 @@ const ProductsPage = () => {
 
             {/* Themes */}
             <div>
-              <div className="flex items-center justify-between"><Label>Themes</Label><Button variant="outline" size="sm" onClick={() => setForm(f => ({ ...f, themes: [...f.themes, { id: "", name: "", preview: "" }] }))}>+ Add Theme</Button></div>
+              <div className="flex items-center justify-between"><Label>Themes</Label><Button variant="outline" size="sm" onClick={() => setForm(f => ({ ...f, themes: [...f.themes, { id: "", name: "", preview: "", image: "" }] }))}>+ Add Theme</Button></div>
               {form.themes.map((t, i) => (
                 <div key={i} className="flex gap-2 mt-2 items-center">
                   <Input placeholder="Name" value={t.name} onChange={e => updateTheme(i, "name", e.target.value)} className="flex-1" />
