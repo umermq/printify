@@ -44,6 +44,29 @@ const Cart = () => {
       return;
     }
     setErrors({});
+
+    // Create orders in the shared order store
+    items.forEach(item => {
+      const orderId = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
+      addOrder({
+        id: orderId,
+        customer: result.data.name,
+        email: result.data.email || "",
+        phone: result.data.phone,
+        city: result.data.city,
+        product: item.name,
+        size: item.size,
+        theme: item.theme,
+        status: "Pending Confirmation",
+        amount: item.price * item.quantity,
+        date: new Date().toISOString().split("T")[0],
+        paymentMethod: result.data.paymentMethod === "cod" ? "COD" : "Online",
+        trackingNumber: "",
+        assignedShop: "",
+        images: item.uploadedImages?.length ? item.uploadedImages : [item.image || "/placeholder.svg"],
+      });
+    });
+
     toast({ title: "Order Placed", description: "We'll confirm your order via WhatsApp shortly." });
     clearCart();
     navigate("/");

@@ -9,14 +9,26 @@ import { useToast } from "@/hooks/use-toast";
 
 const SettingsPage = () => {
   const { toast } = useToast();
-  const [form, setForm] = useState({
-    storeName: "PrintPK", contactEmail: "admin@printpk.com", phone: "0300-1234567", address: "123 Mall Road, Lahore",
+  const SETTINGS_KEY = "pixelcraft_settings";
+  const defaultSettings = {
+    storeName: "PixelCraft", contactEmail: "admin@pixelcraft.pk", phone: "0300-1234567", address: "123 Mall Road, Lahore",
     deliveryTime: "3-5", shippingFee: 200,
     codEnabled: true, jazzCashEnabled: true, easypaisaEnabled: true,
     emailNotifications: true, whatsappAlerts: true,
+  };
+
+  const [form, setForm] = useState(() => {
+    try {
+      const stored = localStorage.getItem(SETTINGS_KEY);
+      if (stored) return { ...defaultSettings, ...JSON.parse(stored) };
+    } catch {}
+    return defaultSettings;
   });
 
-  const save = () => toast({ title: "Settings saved", description: "Your changes have been saved." });
+  const save = () => {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(form)); } catch {}
+    toast({ title: "Settings saved", description: "Your changes have been saved successfully." });
+  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl">

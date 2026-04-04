@@ -7,34 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-
-interface Order {
-  id: string; customer: string; email: string; phone: string; city: string;
-  product: string; size: string; theme: string; status: string;
-  amount: number; date: string; paymentMethod: string; trackingNumber: string;
-  assignedShop: string; images: string[];
-}
+import { useOrders, type Order } from "@/contexts/OrderContext";
 
 const statuses = ["All", "Pending Confirmation", "Confirmed", "Assigned to Print Shop", "In Design", "Awaiting Customer Approval", "Approved", "Printed", "Shipped", "Delivered", "Cancelled"];
 const printShops = ["Lahore Print House", "Karachi Graphics", "Islamabad Prints", "Peshawar Studio"];
-
-const initialOrders: Order[] = [
-  { id: "ORD-001", customer: "Ahmed Khan", email: "ahmed@email.com", phone: "0300-1234567", city: "Lahore", product: "Classic Photo Book", size: "10x10", theme: "Classic White", status: "Pending Confirmation", amount: 3500, date: "2026-02-16", paymentMethod: "COD", trackingNumber: "", assignedShop: "", images: ["/placeholder.svg"] },
-  { id: "ORD-002", customer: "Sara Ali", email: "sara@email.com", phone: "0321-9876543", city: "Karachi", product: "Photo Mug", size: "11oz", theme: "Full Wrap", status: "Confirmed", amount: 800, date: "2026-02-16", paymentMethod: "JazzCash", trackingNumber: "", assignedShop: "", images: ["/placeholder.svg"] },
-  { id: "ORD-003", customer: "Usman Tariq", email: "usman@email.com", phone: "0333-5551234", city: "Islamabad", product: "Custom T-Shirt", size: "L", theme: "Front Print", status: "In Design", amount: 1500, date: "2026-02-15", paymentMethod: "COD", trackingNumber: "", assignedShop: "Islamabad Prints", images: ["/placeholder.svg"] },
-  { id: "ORD-004", customer: "Fatima Noor", email: "fatima@email.com", phone: "0345-7778899", city: "Lahore", product: "Photo Cushion", size: '16"x16"', theme: "Single Photo", status: "Shipped", amount: 2200, date: "2026-02-15", paymentMethod: "Easypaisa", trackingNumber: "TRK-99887766", assignedShop: "Lahore Print House", images: ["/placeholder.svg"] },
-  { id: "ORD-005", customer: "Ali Raza", email: "ali@email.com", phone: "0312-4445566", city: "Faisalabad", product: "Wedding Album", size: "12x12", theme: "Elegant Gold", status: "Delivered", amount: 8000, date: "2026-02-13", paymentMethod: "COD", trackingNumber: "TRK-11223344", assignedShop: "Lahore Print House", images: ["/placeholder.svg"] },
-  { id: "ORD-006", customer: "Hina Malik", email: "hina@email.com", phone: "0300-6667788", city: "Rawalpindi", product: "Magic Mug", size: "11oz", theme: "Photo Reveal", status: "Awaiting Customer Approval", amount: 1200, date: "2026-02-14", paymentMethod: "COD", trackingNumber: "", assignedShop: "Islamabad Prints", images: ["/placeholder.svg"] },
-  { id: "ORD-007", customer: "Bilal Ahmed", email: "bilal@email.com", phone: "0321-1112233", city: "Multan", product: "Photo Keychain", size: "Heart Shape", theme: "Single Photo", status: "Approved", amount: 600, date: "2026-02-14", paymentMethod: "JazzCash", trackingNumber: "", assignedShop: "Lahore Print House", images: ["/placeholder.svg"] },
-  { id: "ORD-008", customer: "Ayesha Siddiqui", email: "ayesha@email.com", phone: "0333-8889900", city: "Karachi", product: "Classic Photo Book", size: "8x8", theme: "Rustic Wood", status: "Printed", amount: 2500, date: "2026-02-13", paymentMethod: "COD", trackingNumber: "", assignedShop: "Karachi Graphics", images: ["/placeholder.svg"] },
-  { id: "ORD-009", customer: "Zain Abbas", email: "zain@email.com", phone: "0345-2223344", city: "Lahore", product: "Custom T-Shirt", size: "XL", theme: "Front & Back", status: "Cancelled", amount: 1600, date: "2026-02-12", paymentMethod: "COD", trackingNumber: "", assignedShop: "", images: ["/placeholder.svg"] },
-  { id: "ORD-010", customer: "Maryam Bibi", email: "maryam@email.com", phone: "0300-5556677", city: "Peshawar", product: "Photo Cushion", size: '12"x12"', theme: "4 Photo Collage", status: "Assigned to Print Shop", amount: 1800, date: "2026-02-14", paymentMethod: "Easypaisa", trackingNumber: "", assignedShop: "Peshawar Studio", images: ["/placeholder.svg"] },
-  { id: "ORD-011", customer: "Hamza Sheikh", email: "hamza@email.com", phone: "0312-9990011", city: "Sialkot", product: "Photo Mug", size: "15oz Large", theme: "Heart Frame", status: "Pending Confirmation", amount: 1000, date: "2026-02-16", paymentMethod: "COD", trackingNumber: "", assignedShop: "", images: ["/placeholder.svg"] },
-  { id: "ORD-012", customer: "Nadia Jamil", email: "nadia@email.com", phone: "0321-7778800", city: "Lahore", product: "Wedding Album", size: "10x10", theme: "Romantic Blush", status: "Confirmed", amount: 5000, date: "2026-02-15", paymentMethod: "JazzCash", trackingNumber: "", assignedShop: "", images: ["/placeholder.svg"] },
-  { id: "ORD-013", customer: "Imran Qureshi", email: "imran@email.com", phone: "0333-1114455", city: "Quetta", product: "Classic Photo Book", size: "12x12", theme: "Modern Dark", status: "In Design", amount: 5000, date: "2026-02-14", paymentMethod: "COD", trackingNumber: "", assignedShop: "Karachi Graphics", images: ["/placeholder.svg"] },
-  { id: "ORD-014", customer: "Sana Rehman", email: "sana@email.com", phone: "0345-6660011", city: "Hyderabad", product: "Photo Keychain", size: "Rectangle", theme: "Single Photo", status: "Delivered", amount: 500, date: "2026-02-11", paymentMethod: "COD", trackingNumber: "TRK-55667788", assignedShop: "Karachi Graphics", images: ["/placeholder.svg"] },
-  { id: "ORD-015", customer: "Farhan Akhtar", email: "farhan@email.com", phone: "0300-3334455", city: "Islamabad", product: "Magic Mug", size: "11oz", theme: "Message Reveal", status: "Pending Confirmation", amount: 1200, date: "2026-02-16", paymentMethod: "Easypaisa", trackingNumber: "", assignedShop: "", images: ["/placeholder.svg"] },
-];
 
 const statusColor = (s: string) => {
   if (s.includes("Pending") || s === "Awaiting Customer Approval") return "bg-warning/10 text-warning border-warning/20";
@@ -47,7 +23,7 @@ const statusColor = (s: string) => {
 };
 
 const OrdersPage = () => {
-  const [orders, setOrders] = useState(initialOrders);
+  const { orders, updateOrder } = useOrders();
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Order | null>(null);
@@ -59,8 +35,8 @@ const OrdersPage = () => {
     return matchTab && matchSearch;
   });
 
-  const updateOrder = (id: string, updates: Partial<Order>) => {
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
+  const handleUpdateOrder = (id: string, updates: Partial<Order>) => {
+    updateOrder(id, updates);
     if (selected?.id === id) setSelected(prev => prev ? { ...prev, ...updates } : null);
     toast({ title: "Order updated", description: `${id} has been updated.` });
   };
@@ -123,7 +99,6 @@ const OrdersPage = () => {
         </table>
       </div>
 
-      {/* Order Detail Dialog */}
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           {selected && (
@@ -152,7 +127,7 @@ const OrdersPage = () => {
                 <div className="space-y-3">
                   <div>
                     <label className="text-sm font-medium">Update Status</label>
-                    <Select value={selected.status} onValueChange={v => updateOrder(selected.id, { status: v })}>
+                    <Select value={selected.status} onValueChange={v => handleUpdateOrder(selected.id, { status: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {statuses.filter(s => s !== "All").map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -161,7 +136,7 @@ const OrdersPage = () => {
                   </div>
                   <div>
                     <label className="text-sm font-medium">Assign to Print Shop</label>
-                    <Select value={selected.assignedShop || ""} onValueChange={v => updateOrder(selected.id, { assignedShop: v })}>
+                    <Select value={selected.assignedShop || ""} onValueChange={v => handleUpdateOrder(selected.id, { assignedShop: v })}>
                       <SelectTrigger><SelectValue placeholder="Select print shop" /></SelectTrigger>
                       <SelectContent>
                         {printShops.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -170,7 +145,7 @@ const OrdersPage = () => {
                   </div>
                   <div>
                     <label className="text-sm font-medium">Tracking Number</label>
-                    <Input value={selected.trackingNumber} onChange={e => updateOrder(selected.id, { trackingNumber: e.target.value })} placeholder="Enter tracking number" />
+                    <Input value={selected.trackingNumber} onChange={e => handleUpdateOrder(selected.id, { trackingNumber: e.target.value })} placeholder="Enter tracking number" />
                   </div>
                 </div>
 
@@ -186,7 +161,7 @@ const OrdersPage = () => {
                 </div>
 
                 {selected.status !== "Cancelled" && (
-                  <Button variant="destructive" onClick={() => { updateOrder(selected.id, { status: "Cancelled" }); setSelected(null); }}>
+                  <Button variant="destructive" onClick={() => { handleUpdateOrder(selected.id, { status: "Cancelled" }); setSelected(null); }}>
                     <X className="h-4 w-4 mr-1" /> Cancel Order
                   </Button>
                 )}
