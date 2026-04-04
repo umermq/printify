@@ -54,7 +54,7 @@ const AdminLayout = () => {
     <div className="flex min-h-screen bg-background">
       <aside className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border bg-sidebar transition-all ${collapsed ? "w-16" : "w-64"}`}>
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
-          {!collapsed && <span className="font-heading text-lg font-bold text-sidebar-foreground">PrintPK Admin</span>}
+          {!collapsed && <span className="font-heading text-lg font-bold text-sidebar-foreground">PixelCraft Admin</span>}
           <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)} className="text-sidebar-foreground hover:bg-sidebar-accent">
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
