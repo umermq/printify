@@ -186,7 +186,7 @@ const ProductDetail = () => {
                         : "border-border bg-background text-foreground hover:border-gold"
                     }`}
                   >
-                    <span>{theme.preview}</span>
+                    <img src={theme.image} alt={theme.name} className="h-4 w-4 rounded object-cover" />
                     {theme.name}
                   </button>
                 ))}
