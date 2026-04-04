@@ -55,7 +55,7 @@ const ProductDetail = () => {
       theme: product.themes[selectedTheme].name,
       quantity,
       price: currentPrice,
-      image: product.themes[selectedTheme].preview,
+      image: product.themes[selectedTheme].image || product.image,
       uploadedImages,
     });
     toast({ title: "Added to cart", description: `${product.name} × ${quantity}` });
