@@ -68,6 +68,11 @@ const AppLayout = () => {
             <Route path="contacts" element={<ContactSubmissionsPage />} />
           </Route>
           <Route path="/print-shop/*" element={<PrintShopDashboard />} />
+          <Route path="/print-shops" element={<Navigate to="/admin/print-shops" replace />} />
+          <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
+          <Route path="/reports" element={<Navigate to="/admin/reports" replace />} />
+          <Route path="/customers" element={<Navigate to="/admin/customers" replace />} />
+          <Route path="/orders" element={<Navigate to="/admin/orders" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
