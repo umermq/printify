@@ -87,11 +87,13 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <CartProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppLayout />
-        </BrowserRouter>
+        <OrderProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppLayout />
+          </BrowserRouter>
+        </OrderProvider>
       </CartProvider>
     </TooltipProvider>
   </QueryClientProvider>
