@@ -74,8 +74,12 @@ const Cart = () => {
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => (
                 <div key={item.id} className="flex gap-4 rounded-xl border border-border bg-background p-5 shadow-luxury">
-                  <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg bg-card text-3xl">
-                    {item.image}
+                  <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg bg-card overflow-hidden">
+                     {item.image?.startsWith("http") ? (
+                       <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                     ) : (
+                       <ShoppingBag className="h-8 w-8 text-muted-foreground/40" />
+                     )}
                   </div>
                   <div className="flex flex-1 flex-col">
                     <h3 className="font-serif text-base font-medium text-foreground">{item.name}</h3>
