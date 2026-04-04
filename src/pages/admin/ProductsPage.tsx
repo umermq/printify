@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const emptyProduct: Omit<Product, "id"> = {
   name: "", category: "", categorySlug: "", description: "", basePrice: 0,
-  sizes: [{ label: "", price: 0 }], themes: [{ id: "", name: "", preview: "" }],
+  sizes: [{ label: "", price: 0 }], themes: [{ id: "", name: "", preview: "", image: "" }],
   deliveryDays: "3-5 days", image: "", featured: false,
 };
 
