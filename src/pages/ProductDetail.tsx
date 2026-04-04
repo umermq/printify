@@ -88,13 +88,13 @@ const ProductDetail = () => {
                 <button
                   key={i}
                   onClick={() => setSelectedTheme(i)}
-                  className={`flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-card text-2xl transition-all duration-300 ${
+                  className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg transition-all duration-300 ${
                     selectedTheme === i
                       ? "ring-2 ring-gold ring-offset-2"
                       : "ring-1 ring-border hover:ring-gold/50"
                   }`}
                 >
-                  {theme.preview}
+                  <img src={theme.image} alt={theme.name} className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>
