@@ -1,71 +1,45 @@
 
 
-# Hero Banners + PixelCraft Logo Redesign
+# Fix Cart Image Preview + 404 Routes
 
-Rebrand from "PrintPK" to "PixelCraft" with a designed SVG logo and add elegant hero banners to every page that currently lacks one.
+## Two Issues Found
+
+### Issue 1: Cart shows raw URLs instead of images
+In `src/pages/Cart.tsx` line 78, `{item.image}` renders the Unsplash URL as plain text. It needs to be an `<img>` tag.
+
+### Issue 2: `/print-shops`, `/settings`, `/reports` give 404
+The user is navigating to `/print-shops` (top-level) but these routes only exist under `/admin/print-shops`. The `/print-shop/*` route (for the Print Shop Dashboard) uses a wildcard but only renders the `PrintShopDashboard` component — there's no `/print-shops` route at the top level.
+
+The user is on `/print-shops` (plural) which matches neither `/print-shop/*` nor `/admin/print-shops`. This hits the `*` catch-all and shows NotFound.
+
+**Most likely cause**: The user is clicking links that point to `/print-shops`, `/settings`, `/reports` without the `/admin` prefix — possibly from the PrintShopDashboard sidebar or direct URL entry.
 
 ---
 
-## 1. PixelCraft Logo
+## Changes
 
-Create an inline SVG logo component (`src/components/Logo.tsx`) featuring:
-- A minimal geometric mark: 4 small squares arranged in a 2x2 pixel grid pattern (referencing "pixel") with matte gold color
-- "PixelCraft" wordmark in Cormorant Garamond, tracking-widest
-- Used everywhere: header, footer, login page, mobile drawer
+### 1. Fix cart item image display (`src/pages/Cart.tsx`)
 
-## 2. Brand Name Update
+Replace line 77-79 (the `{item.image}` text render) with a proper `<img>` tag:
+- If `item.image` starts with `http`, render `<img src={item.image} className="h-20 w-20 object-cover rounded-lg" />`
+- Otherwise fall back to a placeholder icon
 
-Search-and-replace "PrintPK" with "PixelCraft" across all files: Layout header/footer, Index page, SEO titles, CMS content, meta tags in index.html, sitemap, About page, Contact page, FAQ page, etc.
+### 2. Clarify 404 routes
 
-## 3. Hero Banners for All Pages
+The admin routes (`/admin/print-shops`, `/admin/settings`, `/admin/reports`) already work. The issue is that the user is typing `/print-shops` (without `/admin` prefix) in the URL bar. Two options:
 
-Currently only the homepage and products page have headers. Add a consistent luxury hero banner to every customer-facing page:
+**Option A** — Add redirect routes from `/print-shops` → `/admin/print-shops`, `/settings` → `/admin/settings`, `/reports` → `/admin/reports`
 
-**Shared `PageHero` component** (`src/components/PageHero.tsx`):
-- Full-width section with `bg-card` background
-- Gold section label (uppercase, tracking-widest)
-- Large serif heading
-- Optional subtitle in muted text
-- Optional Unsplash background image with warm overlay
-- Breadcrumbs integrated below the heading
-- Consistent padding: `py-20`
+**Option B** — The routes are correct as-is; the user just needs to navigate via `/admin` sidebar
 
-**Pages to update:**
-| Page | Label | Heading | Background Image |
-|---|---|---|---|
-| Products | Category or "ALL PRODUCTS" | Dynamic title | Soft print studio image |
-| About | "OUR STORY" | "About PixelCraft" | Workshop/studio image |
-| Contact | "GET IN TOUCH" | "Contact Us" | Elegant desk image |
-| FAQs | "HELP CENTER" | "Frequently Asked Questions" | — |
-| Privacy Policy | "LEGAL" | "Privacy Policy" | — |
-| Terms | "LEGAL" | "Terms & Conditions" | — |
-| Refund Policy | "POLICIES" | "Refund Policy" | — |
-| Shipping Policy | "POLICIES" | "Shipping Policy" | — |
-| Return Policy | "POLICIES" | "Return Policy" | — |
-| Cart | "YOUR CART" | "Shopping Cart" | — |
-| Login | "ACCOUNT" | "Welcome Back" | — |
+I'll implement **Option A** with `<Navigate>` redirects for convenience.
 
-## 4. Files Summary
+---
+
+## Files Modified
 
 | File | Change |
 |---|---|
-| `src/components/Logo.tsx` | **New** — SVG logo component |
-| `src/components/PageHero.tsx` | **New** — reusable hero banner |
-| `src/components/Layout.tsx` | Use Logo component, rename to PixelCraft |
-| `src/pages/Index.tsx` | Rename brand references |
-| `src/pages/Products.tsx` | Use PageHero instead of plain header |
-| `src/pages/ProductDetail.tsx` | Brand name update |
-| `src/pages/Cart.tsx` | Add PageHero |
-| `src/pages/Login.tsx` | Add PageHero, use Logo |
-| `src/pages/cms/AboutPage.tsx` | Add PageHero |
-| `src/pages/cms/ContactPage.tsx` | Add PageHero, update brand |
-| `src/pages/cms/FAQsPage.tsx` | Add PageHero |
-| `src/pages/cms/PolicyPages.tsx` | Add PageHero |
-| `src/data/cms-content.ts` | Replace PrintPK → PixelCraft in content |
-| `index.html` | Update title and meta tags |
-| `public/sitemap.xml` | Update brand name |
-| `src/components/SEOHead.tsx` | No structural change |
-| `src/components/WhatsAppButton.tsx` | Brand name if referenced |
-
-**New files: 2. Modified files: ~14. No new packages.**
+| `src/pages/Cart.tsx` | Render `<img>` instead of raw URL text for cart items |
+| `src/App.tsx` | Add redirect routes for `/print-shops`, `/settings`, `/reports` to their `/admin/` equivalents |
 
