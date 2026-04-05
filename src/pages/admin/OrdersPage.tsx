@@ -12,6 +12,10 @@ import { useOrders, type Order } from "@/contexts/OrderContext";
 const statuses = ["All", "Pending Confirmation", "Confirmed", "Assigned to Print Shop", "In Design", "Awaiting Customer Approval", "Approved", "Printed", "Shipped", "Delivered", "Cancelled"];
 const printShops = ["Lahore Print House", "Karachi Graphics", "Islamabad Prints", "Peshawar Studio"];
 
+const getRenderableImages = (images: string[]) => images.filter((img) => img && img !== "/placeholder.svg");
+
+const isLegacyBlobImage = (img: string) => img.startsWith("blob:");
+
 const statusColor = (s: string) => {
   if (s.includes("Pending") || s === "Awaiting Customer Approval") return "bg-warning/10 text-warning border-warning/20";
   if (s === "Confirmed" || s === "Approved") return "bg-primary/10 text-primary border-primary/20";
@@ -46,8 +50,8 @@ const OrdersPage = () => {
     if (!selected) return;
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
-    const imagesHtml = selected.images
-      .filter(img => img && img !== "/placeholder.svg")
+    const renderableImages = getRenderableImages(selected.images);
+    const imagesHtml = renderableImages
       .map(img => `<img src="${img}" style="max-width:300px;max-height:300px;object-fit:contain;border:1px solid #ddd;border-radius:8px;" />`)
       .join("");
     printWindow.document.write(`
@@ -64,6 +68,7 @@ const OrdersPage = () => {
         <tr><th>Print Shop</th><td>${selected.assignedShop || "—"}</td><th>Date</th><td>${selected.date}</td></tr>
       </table>
       ${imagesHtml ? `<h2>Customer Uploaded Images</h2><div class="images">${imagesHtml}</div>` : ""}
+      ${renderableImages.some(isLegacyBlobImage) ? `<p style="margin-top:16px;color:#b45309">Some artwork uses temporary browser image links and may not print after a refresh. New uploads are now stored more reliably.</p>` : ""}
       <script>setTimeout(()=>window.print(),500)<\/script>
       </body></html>
     `);
@@ -133,6 +138,11 @@ const OrdersPage = () => {
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           {selected && (
             <>
+              {(() => {
+                const renderableImages = getRenderableImages(selected.images);
+                const hasLegacyBlobImages = renderableImages.some(isLegacyBlobImage);
+
+                return (
               <DialogHeader>
                 <DialogTitle className="flex items-center justify-between">
                   <span>Order {selected.id}</span>
@@ -187,11 +197,16 @@ const OrdersPage = () => {
                 {/* Customer Uploaded Images */}
                 <div>
                   <p className="text-sm font-medium mb-2">Customer Uploaded Images</p>
+                  {hasLegacyBlobImages && (
+                    <p className="mb-3 text-sm text-warning">
+                      These are older temporary uploads. If they break after refresh, the customer artwork needs to be uploaded again.
+                    </p>
+                  )}
                   <div className="flex gap-3 flex-wrap">
-                    {selected.images.filter(img => img && img !== "/placeholder.svg").length === 0 ? (
+                    {renderableImages.length === 0 ? (
                       <p className="text-sm text-muted-foreground">No images uploaded by customer.</p>
                     ) : (
-                      selected.images.filter(img => img && img !== "/placeholder.svg").map((img, i) => (
+                      renderableImages.map((img, i) => (
                         <div
                           key={i}
                           className="relative h-28 w-28 rounded-lg border border-border bg-muted overflow-hidden cursor-pointer group"
@@ -213,6 +228,8 @@ const OrdersPage = () => {
                   </Button>
                 )}
               </div>
+                );
+              })()}
             </>
           )}
         </DialogContent>

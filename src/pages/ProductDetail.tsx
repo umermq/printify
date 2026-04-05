@@ -32,18 +32,36 @@ const ProductDetail = () => {
 
   const currentPrice = product.sizes[selectedSize].price;
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const fileToDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("Failed to read image"));
+    reader.readAsDataURL(file);
+  });
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    const newImages: string[] = [];
-    Array.from(files).forEach((file) => {
+
+    const validFiles = Array.from(files).filter((file) => {
       if (file.size > 10 * 1024 * 1024) {
         toast({ title: "File too large", description: "Max 10MB per image", variant: "destructive" });
-        return;
+        return false;
       }
-      newImages.push(URL.createObjectURL(file));
+      return true;
     });
-    setUploadedImages((prev) => [...prev, ...newImages]);
+
+    try {
+      const newImages = await Promise.all(validFiles.map(fileToDataUrl));
+      setUploadedImages((prev) => [...prev, ...newImages]);
+      if (newImages.length > 0) {
+        toast({ title: "Photos uploaded", description: `${newImages.length} image${newImages.length > 1 ? "s" : ""} ready for your order.` });
+      }
+    } catch {
+      toast({ title: "Upload failed", description: "Please try your images again.", variant: "destructive" });
+    });
+
+    e.target.value = "";
   };
 
   const handleAddToCart = () => {
