@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Eye, X } from "lucide-react";
+import { Search, Eye, X, Printer, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +27,7 @@ const OrdersPage = () => {
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Order | null>(null);
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
   const { toast } = useToast();
 
   const filtered = orders.filter(o => {
@@ -39,6 +40,34 @@ const OrdersPage = () => {
     updateOrder(id, updates);
     if (selected?.id === id) setSelected(prev => prev ? { ...prev, ...updates } : null);
     toast({ title: "Order updated", description: `${id} has been updated.` });
+  };
+
+  const handlePrintOrder = () => {
+    if (!selected) return;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    const imagesHtml = selected.images
+      .filter(img => img && img !== "/placeholder.svg")
+      .map(img => `<img src="${img}" style="max-width:300px;max-height:300px;object-fit:contain;border:1px solid #ddd;border-radius:8px;" />`)
+      .join("");
+    printWindow.document.write(`
+      <html><head><title>Order ${selected.id}</title>
+      <style>body{font-family:system-ui,sans-serif;padding:40px;color:#222}h1{font-size:24px}table{border-collapse:collapse;width:100%;margin:20px 0}td,th{padding:8px 12px;border:1px solid #ddd;text-align:left}.images{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}</style>
+      </head><body>
+      <h1>Order Sheet — ${selected.id}</h1>
+      <table>
+        <tr><th>Customer</th><td>${selected.customer}</td><th>Phone</th><td>${selected.phone}</td></tr>
+        <tr><th>Email</th><td>${selected.email}</td><th>City</th><td>${selected.city}</td></tr>
+        <tr><th>Product</th><td>${selected.product}</td><th>Size / Theme</th><td>${selected.size} / ${selected.theme}</td></tr>
+        <tr><th>Amount</th><td>Rs. ${selected.amount.toLocaleString()}</td><th>Payment</th><td>${selected.paymentMethod}</td></tr>
+        <tr><th>Status</th><td>${selected.status}</td><th>Tracking</th><td>${selected.trackingNumber || "—"}</td></tr>
+        <tr><th>Print Shop</th><td>${selected.assignedShop || "—"}</td><th>Date</th><td>${selected.date}</td></tr>
+      </table>
+      ${imagesHtml ? `<h2>Customer Uploaded Images</h2><div class="images">${imagesHtml}</div>` : ""}
+      <script>setTimeout(()=>window.print(),500)<\/script>
+      </body></html>
+    `);
+    printWindow.document.close();
   };
 
   return (
@@ -99,12 +128,18 @@ const OrdersPage = () => {
         </table>
       </div>
 
+      {/* Order Detail Dialog */}
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           {selected && (
             <>
               <DialogHeader>
-                <DialogTitle>Order {selected.id}</DialogTitle>
+                <DialogTitle className="flex items-center justify-between">
+                  <span>Order {selected.id}</span>
+                  <Button variant="outline" size="sm" onClick={handlePrintOrder} className="gap-1">
+                    <Printer className="h-4 w-4" /> Print Order Sheet
+                  </Button>
+                </DialogTitle>
               </DialogHeader>
               <div className="grid gap-4 mt-2">
                 <div className="grid grid-cols-2 gap-4">
@@ -149,14 +184,26 @@ const OrdersPage = () => {
                   </div>
                 </div>
 
+                {/* Customer Uploaded Images */}
                 <div>
-                  <p className="text-sm font-medium mb-2">Uploaded Images</p>
-                  <div className="flex gap-2">
-                    {selected.images.map((img, i) => (
-                      <div key={i} className="h-20 w-20 rounded-lg border border-border bg-muted flex items-center justify-center">
-                        <img src={img} alt="upload" className="h-full w-full object-cover rounded-lg" />
-                      </div>
-                    ))}
+                  <p className="text-sm font-medium mb-2">Customer Uploaded Images</p>
+                  <div className="flex gap-3 flex-wrap">
+                    {selected.images.filter(img => img && img !== "/placeholder.svg").length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No images uploaded by customer.</p>
+                    ) : (
+                      selected.images.filter(img => img && img !== "/placeholder.svg").map((img, i) => (
+                        <div
+                          key={i}
+                          className="relative h-28 w-28 rounded-lg border border-border bg-muted overflow-hidden cursor-pointer group"
+                          onClick={() => setLightboxImg(img)}
+                        >
+                          <img src={img} alt={`Upload ${i + 1}`} className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }} />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <ZoomIn className="h-5 w-5 text-white" />
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 
@@ -167,6 +214,15 @@ const OrdersPage = () => {
                 )}
               </div>
             </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Lightbox */}
+      <Dialog open={!!lightboxImg} onOpenChange={() => setLightboxImg(null)}>
+        <DialogContent className="max-w-3xl p-2">
+          {lightboxImg && (
+            <img src={lightboxImg} alt="Full size" className="w-full h-auto max-h-[80vh] object-contain rounded-lg" />
           )}
         </DialogContent>
       </Dialog>

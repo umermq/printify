@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from "react";
 
 export interface Order {
   id: string;
@@ -18,6 +18,27 @@ export interface Order {
   images: string[];
 }
 
+export interface DerivedCustomer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
+  ordersCount: number;
+  totalSpent: number;
+  active: boolean;
+  joinedDate: string;
+  orders: Order[];
+}
+
+export interface DashboardStats {
+  totalRevenue: number;
+  ordersToday: number;
+  pendingOrders: number;
+  completedOrders: number;
+  recentOrders: Order[];
+}
+
 const STORAGE_KEY = "pixelcraft_orders";
 
 const defaultOrders: Order[] = [
@@ -31,8 +52,13 @@ const defaultOrders: Order[] = [
 function loadOrders(): Order[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
   } catch {}
+  // First time: save defaults
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultOrders)); } catch {}
   return defaultOrders;
 }
 
@@ -44,12 +70,25 @@ interface OrderContextType {
   orders: Order[];
   addOrder: (order: Order) => void;
   updateOrder: (id: string, updates: Partial<Order>) => void;
+  dashboardStats: DashboardStats;
+  customers: DerivedCustomer[];
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export const OrderProvider = ({ children }: { children: ReactNode }) => {
   const [orders, setOrders] = useState<Order[]>(loadOrders);
+
+  // Sync across tabs
+  useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try { setOrders(JSON.parse(e.newValue)); } catch {}
+      }
+    };
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, []);
 
   const addOrder = useCallback((order: Order) => {
     setOrders(prev => {
@@ -67,8 +106,46 @@ export const OrderProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
+  const dashboardStats = useMemo<DashboardStats>(() => {
+    const today = new Date().toISOString().split("T")[0];
+    const totalRevenue = orders.reduce((sum, o) => sum + o.amount, 0);
+    const ordersToday = orders.filter(o => o.date === today).length;
+    const pendingOrders = orders.filter(o => o.status.includes("Pending") || o.status === "Awaiting Customer Approval").length;
+    const completedOrders = orders.filter(o => o.status === "Delivered").length;
+    const recentOrders = [...orders].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+    return { totalRevenue, ordersToday, pendingOrders, completedOrders, recentOrders };
+  }, [orders]);
+
+  const customers = useMemo<DerivedCustomer[]>(() => {
+    const map = new Map<string, DerivedCustomer>();
+    orders.forEach(o => {
+      const key = (o.email || o.phone || o.customer).toLowerCase();
+      const existing = map.get(key);
+      if (existing) {
+        existing.ordersCount += 1;
+        existing.totalSpent += o.amount;
+        existing.orders.push(o);
+        if (o.date < existing.joinedDate) existing.joinedDate = o.date;
+      } else {
+        map.set(key, {
+          id: key,
+          name: o.customer,
+          email: o.email,
+          phone: o.phone,
+          city: o.city,
+          ordersCount: 1,
+          totalSpent: o.amount,
+          active: o.status !== "Cancelled",
+          joinedDate: o.date,
+          orders: [o],
+        });
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => b.totalSpent - a.totalSpent);
+  }, [orders]);
+
   return (
-    <OrderContext.Provider value={{ orders, addOrder, updateOrder }}>
+    <OrderContext.Provider value={{ orders, addOrder, updateOrder, dashboardStats, customers }}>
       {children}
     </OrderContext.Provider>
   );
