@@ -40,6 +40,9 @@ const OrdersPage = () => {
     return matchTab && matchSearch;
   });
 
+  const selectedImages = selected ? getRenderableImages(selected.images) : [];
+  const hasLegacyBlobImages = selectedImages.some(isLegacyBlobImage);
+
   const handleUpdateOrder = (id: string, updates: Partial<Order>) => {
     updateOrder(id, updates);
     if (selected?.id === id) setSelected(prev => prev ? { ...prev, ...updates } : null);
@@ -138,11 +141,6 @@ const OrdersPage = () => {
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           {selected && (
             <>
-              {(() => {
-                const renderableImages = getRenderableImages(selected.images);
-                const hasLegacyBlobImages = renderableImages.some(isLegacyBlobImage);
-
-                return (
               <DialogHeader>
                 <DialogTitle className="flex items-center justify-between">
                   <span>Order {selected.id}</span>
@@ -203,10 +201,10 @@ const OrdersPage = () => {
                     </p>
                   )}
                   <div className="flex gap-3 flex-wrap">
-                    {renderableImages.length === 0 ? (
+                    {selectedImages.length === 0 ? (
                       <p className="text-sm text-muted-foreground">No images uploaded by customer.</p>
                     ) : (
-                      renderableImages.map((img, i) => (
+                      selectedImages.map((img, i) => (
                         <div
                           key={i}
                           className="relative h-28 w-28 rounded-lg border border-border bg-muted overflow-hidden cursor-pointer group"
@@ -228,8 +226,6 @@ const OrdersPage = () => {
                   </Button>
                 )}
               </div>
-                );
-              })()}
             </>
           )}
         </DialogContent>

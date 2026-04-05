@@ -59,7 +59,7 @@ const ProductDetail = () => {
       }
     } catch {
       toast({ title: "Upload failed", description: "Please try your images again.", variant: "destructive" });
-    });
+    }
 
     e.target.value = "";
   };
