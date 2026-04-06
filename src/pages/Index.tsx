@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Award, Shield, Truck, CreditCard, Star } from "lucide-react";
-import { categories, products } from "@/data/products";
+import { useProducts } from "@/contexts/ProductContext";
 import heroBanner from "@/assets/hero-banner.jpg";
 
 const fadeUp = (delay = 0) => ({
@@ -26,6 +26,7 @@ const testimonials = [
 ];
 
 const Index = () => {
+  const { products, categories } = useProducts();
   const featured = products.filter((p) => p.featured);
 
   return (

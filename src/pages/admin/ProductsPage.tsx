@@ -10,7 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { products as initialProductData, categories, type Product } from "@/data/products";
+import { type Product } from "@/data/products";
+import { useProducts } from "@/contexts/ProductContext";
 import { useToast } from "@/hooks/use-toast";
 
 const emptyProduct: Omit<Product, "id"> = {
@@ -20,7 +21,7 @@ const emptyProduct: Omit<Product, "id"> = {
 };
 
 const ProductsPage = () => {
-  const [productList, setProductList] = useState<Product[]>(initialProductData);
+  const { products: productList, categories, addProduct, updateProduct, deleteProduct: removeProduct } = useProducts();
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -46,18 +47,18 @@ const ProductsPage = () => {
     const cat = categories.find(c => c.slug === form.categorySlug);
     const updated = { ...form, category: cat?.name || form.category };
     if (editingProduct) {
-      setProductList(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...updated } : p));
+      updateProduct(editingProduct.id, updated);
       toast({ title: "Product updated", description: `${form.name} saved.` });
     } else {
       const newP: Product = { ...updated, id: `prod-${Date.now()}` };
-      setProductList(prev => [...prev, newP]);
+      addProduct(newP);
       toast({ title: "Product added", description: `${form.name} created.` });
     }
     setDialogOpen(false);
   };
 
   const deleteProduct = (id: string) => {
-    setProductList(prev => prev.filter(p => p.id !== id));
+    removeProduct(id);
     toast({ title: "Product deleted" });
   };
 

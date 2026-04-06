@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import { OrderProvider } from "@/contexts/OrderContext";
+import { ProductProvider } from "@/contexts/ProductContext";
 import { Header, Footer } from "@/components/Layout";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import Index from "./pages/Index";
@@ -86,6 +87,7 @@ const AppLayout = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <ProductProvider>
       <CartProvider>
         <OrderProvider>
           <Toaster />
@@ -95,6 +97,7 @@ const App = () => (
           </BrowserRouter>
         </OrderProvider>
       </CartProvider>
+      </ProductProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
