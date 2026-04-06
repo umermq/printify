@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { categories as initialCats, type Category } from "@/data/products";
+import { type Category } from "@/data/products";
+import { useProducts } from "@/contexts/ProductContext";
 import { useToast } from "@/hooks/use-toast";
 
 const CategoriesPage = () => {
-  const [cats, setCats] = useState<Category[]>(initialCats);
+  const { categories: cats, addCategory, updateCategory, deleteCategory: removeCategory } = useProducts();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [form, setForm] = useState({ name: "", slug: "", description: "", icon: "", productCount: 0 });
@@ -23,17 +24,17 @@ const CategoriesPage = () => {
     if (!form.name) return;
     const slug = form.slug || form.name.toLowerCase().replace(/\s+/g, "-");
     if (editing) {
-      setCats(prev => prev.map(c => c.slug === editing.slug ? { ...c, ...form, slug, image: "" } : c));
+      updateCategory(editing.slug, { ...form, slug, image: "" });
       toast({ title: "Category updated" });
     } else {
-      setCats(prev => [...prev, { ...form, slug, image: "" }]);
+      addCategory({ ...form, slug, image: "" });
       toast({ title: "Category added" });
     }
     setDialogOpen(false);
   };
 
   const deleteCat = (slug: string) => {
-    setCats(prev => prev.filter(c => c.slug !== slug));
+    removeCategory(slug);
     toast({ title: "Category deleted" });
   };
 

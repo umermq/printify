@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Upload, Minus, Plus, ShoppingCart, Truck, Star, Shield } from "lucide-react";
-import { products } from "@/data/products";
+import { useProducts } from "@/contexts/ProductContext";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -11,6 +11,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { addItem } = useCart();
   const { toast } = useToast();
+  const { products } = useProducts();
   const product = products.find((p) => p.id === id);
   const fileRef = useRef<HTMLInputElement>(null);
 

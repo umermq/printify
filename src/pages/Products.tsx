@@ -1,11 +1,12 @@
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { products, categories } from "@/data/products";
+import { useProducts } from "@/contexts/ProductContext";
 import { ArrowRight } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 
 const Products = () => {
   const [searchParams] = useSearchParams();
+  const { products, categories } = useProducts();
   const categoryFilter = searchParams.get("category");
 
   const filtered = categoryFilter
