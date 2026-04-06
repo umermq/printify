@@ -191,7 +191,7 @@ const ProductDetail = () => {
             {/* Theme Selector */}
             <div className="mt-6">
               <h3 className="mb-3 text-xs font-medium tracking-widest uppercase text-foreground">
-                Theme
+                {product.categorySlug === "photo-prints" ? "Material / Finish" : "Theme"}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {product.themes.map((theme, i) => (

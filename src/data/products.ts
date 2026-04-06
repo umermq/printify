@@ -22,6 +22,7 @@ export interface Category {
 }
 
 export const categories: Category[] = [
+  { slug: "photo-prints", name: "Photo Prints", description: "High-quality prints in glossy or matte finish", icon: "🖼️", image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80&auto=format&fit=crop", productCount: 1 },
   { slug: "photo-books", name: "Photo Books", description: "Premium hardcover & softcover photo books", icon: "📖", image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800&q=80&auto=format&fit=crop", productCount: 4 },
   { slug: "mugs", name: "Custom Mugs", description: "Ceramic mugs with your favorite photos", icon: "☕", image: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=800&q=80&auto=format&fit=crop", productCount: 3 },
   { slug: "t-shirts", name: "T-Shirts", description: "Custom printed t-shirts in all sizes", icon: "👕", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80&auto=format&fit=crop", productCount: 3 },
@@ -29,6 +30,16 @@ export const categories: Category[] = [
 ];
 
 export const products: Product[] = [
+  {
+    id: "pp-1", name: "Photo Prints", category: "Photo Prints", categorySlug: "photo-prints",
+    description: "High-quality photo prints on premium paper. Choose your size and finish for vibrant, true-to-life prints. Perfect for framing, gifting, or preserving your favourite memories.",
+    basePrice: 150, sizes: [{ label: "4x6 inches", price: 150 }, { label: "5x7 inches", price: 250 }],
+    themes: [
+      { id: "glossy", name: "Glossy", preview: "✨", image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400&q=80&auto=format&fit=crop" },
+      { id: "matte", name: "Matte", preview: "🎨", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=400&q=80&auto=format&fit=crop" },
+    ],
+    deliveryDays: "2-4 days", image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80&auto=format&fit=crop", featured: true,
+  },
   {
     id: "pb-1", name: "Classic Photo Book", category: "Photo Books", categorySlug: "photo-books",
     description: "A beautiful hardcover photo book with premium glossy pages. Perfect for weddings, birthdays, and family memories.",

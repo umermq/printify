@@ -9,6 +9,7 @@ import { Logo } from "@/components/Logo";
 const navLinks = [
   { label: "Home", to: "/" },
   { label: "Products", to: "/products" },
+  { label: "Photo Prints", to: "/products?category=photo-prints" },
   { label: "Photo Books", to: "/products?category=photo-books" },
   { label: "Mugs", to: "/products?category=mugs" },
   { label: "T-Shirts", to: "/products?category=t-shirts" },
