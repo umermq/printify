@@ -1,44 +1,44 @@
 
 
-# Add Photo Prints Product Category (Photobox-inspired)
+# Fix Product Data Persistence + Sync Across App
 
-Inspired by the Photobox reference, add a new "Photo Prints" category and product to PixelCraft. Instead of themes, this product uses a **Material** selector (Glossy / Matte) since photo prints are about the finish, not a design theme.
+## Problem
 
----
+The admin Products page stores product edits only in React component state (`useState`). When you change a price, add a product, or edit any field and click "Save Changes", the data updates in the admin table but:
+- It is lost on page refresh (no localStorage persistence)
+- The storefront pages (`Products.tsx`, `ProductDetail.tsx`, `Index.tsx`) import directly from `@/data/products.ts` and never see admin edits
 
-## What changes
+This is the same pattern that was already fixed for Settings and Orders.
 
-### 1. Add "Photo Prints" category and product to `src/data/products.ts`
+## Solution
 
-**New category:**
-- slug: `photo-prints`, name: "Photo Prints", icon: "🖼️", image from Unsplash (photo prints style)
+Create a **ProductContext** (similar to OrderContext) that:
+1. Initializes from `localStorage`, falling back to the hardcoded product data
+2. Persists every change to `localStorage`
+3. Syncs across tabs via `storage` event listener
+4. Is consumed by both admin and storefront pages
 
-**New product:**
-- id: `pp-1`, name: "Photo Prints", category: "Photo Prints", categorySlug: `photo-prints`
-- description: "High-quality photo prints on premium paper. Choose your size and finish for vibrant, true-to-life prints."
-- sizes: `4x6` (PKR 150) and `5x7` (PKR 250)
-- themes array repurposed as material/finish options: `Glossy` and `Matte` (with appropriate Unsplash images)
-- deliveryDays: "2-4 days", featured: true
-
-### 2. Update `src/pages/ProductDetail.tsx` — dynamic label for Theme/Material
-
-The current product detail page hardcodes "Theme" as the selector label. For photo prints, this should say "Material / Finish" instead.
-
-Add a simple check: if the product's `categorySlug === "photo-prints"`, show "Material / Finish" as the heading; otherwise keep "Theme". This avoids needing a new data field.
-
-### 3. Add navigation link for Photo Prints
-
-Update header navigation in `src/components/Layout.tsx` (or wherever nav links are defined) to include a "Photo Prints" category link pointing to `/products?category=photo-prints`.
-
----
-
-## Files to modify
+## Files to change
 
 | File | Change |
 |---|---|
-| `src/data/products.ts` | Add photo-prints category + photo prints product |
-| `src/pages/ProductDetail.tsx` | Show "Material / Finish" label for photo-prints category |
-| `src/components/Layout.tsx` | Add Photo Prints nav link (if nav is here) |
+| `src/contexts/ProductContext.tsx` | **New file.** Context provider with `products`, `categories`, `addProduct`, `updateProduct`, `deleteProduct`, `addCategory`, `updateCategory`, `deleteCategory`. localStorage-backed with cross-tab sync. |
+| `src/App.tsx` | Wrap app in `ProductProvider` |
+| `src/pages/admin/ProductsPage.tsx` | Replace `useState(initialProductData)` with `useProducts()` context. Call context mutations instead of local state setters. |
+| `src/pages/admin/CategoriesPage.tsx` | Replace `useState(initialCats)` with `useProducts()` context for categories. |
+| `src/pages/Products.tsx` | Import `products`/`categories` from context instead of static data file |
+| `src/pages/ProductDetail.tsx` | Import `products` from context instead of static data file |
+| `src/pages/Index.tsx` | Import `categories`/`products` from context instead of static data file |
 
-No new packages. No structural changes to existing components.
+## Technical details
+
+```text
+Admin edits product
+  -> updateProduct() in ProductContext
+  -> saves to localStorage("pixelcraft_products")
+  -> all pages using useProducts() see updated data
+  -> survives refresh, syncs across tabs
+```
+
+The static `products` array in `data/products.ts` remains as the initial seed data only.
 
