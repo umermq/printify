@@ -49,33 +49,53 @@ const OrdersPage = () => {
     toast({ title: "Order updated", description: `${id} has been updated.` });
   };
 
+  const generateOrderHTML = (order: Order) => {
+    const renderableImages = getRenderableImages(order.images);
+    const imagesHtml = renderableImages
+      .map(img => `<img src="${img}" style="max-width:300px;max-height:300px;object-fit:contain;border:1px solid #ddd;border-radius:8px;" />`)
+      .join("");
+    const blobWarning = renderableImages.some(isLegacyBlobImage)
+      ? `<p style="margin-top:16px;color:#b45309">Some artwork uses temporary browser image links and may not display correctly. New uploads are stored more reliably.</p>`
+      : "";
+    return `<html><head><title>Order ${order.id}</title>
+      <style>body{font-family:system-ui,sans-serif;padding:40px;color:#222}h1{font-size:28px;margin-bottom:4px}h2{font-size:18px;margin-top:24px}.batch{font-size:32px;font-weight:bold;color:#111;border:3px solid #111;display:inline-block;padding:8px 24px;border-radius:8px;margin-bottom:16px;letter-spacing:1px}table{border-collapse:collapse;width:100%;margin:20px 0}td,th{padding:8px 12px;border:1px solid #ddd;text-align:left}.images{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}</style>
+      </head><body>
+      <div class="batch">BATCH # ${order.id}</div>
+      <h1>Order Sheet</h1>
+      <table>
+        <tr><th>Customer</th><td>${order.customer}</td><th>Phone</th><td>${order.phone}</td></tr>
+        <tr><th>Email</th><td>${order.email}</td><th>City</th><td>${order.city}</td></tr>
+        <tr><th>Product</th><td>${order.product}</td><th>Size / Theme</th><td>${order.size} / ${order.theme}</td></tr>
+        <tr><th>Amount</th><td>Rs. ${order.amount.toLocaleString()}</td><th>Payment</th><td>${order.paymentMethod}</td></tr>
+        <tr><th>Status</th><td>${order.status}</td><th>Tracking</th><td>${order.trackingNumber || "—"}</td></tr>
+        <tr><th>Print Shop</th><td>${order.assignedShop || "—"}</td><th>Date</th><td>${order.date}</td></tr>
+      </table>
+      ${imagesHtml ? `<h2>Customer Uploaded Images</h2><div class="images">${imagesHtml}</div>` : ""}
+      ${blobWarning}
+      </body></html>`;
+  };
+
   const handlePrintOrder = () => {
     if (!selected) return;
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
-    const renderableImages = getRenderableImages(selected.images);
-    const imagesHtml = renderableImages
-      .map(img => `<img src="${img}" style="max-width:300px;max-height:300px;object-fit:contain;border:1px solid #ddd;border-radius:8px;" />`)
-      .join("");
-    printWindow.document.write(`
-      <html><head><title>Order ${selected.id}</title>
-      <style>body{font-family:system-ui,sans-serif;padding:40px;color:#222}h1{font-size:24px}table{border-collapse:collapse;width:100%;margin:20px 0}td,th{padding:8px 12px;border:1px solid #ddd;text-align:left}.images{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}</style>
-      </head><body>
-      <h1>Order Sheet — ${selected.id}</h1>
-      <table>
-        <tr><th>Customer</th><td>${selected.customer}</td><th>Phone</th><td>${selected.phone}</td></tr>
-        <tr><th>Email</th><td>${selected.email}</td><th>City</th><td>${selected.city}</td></tr>
-        <tr><th>Product</th><td>${selected.product}</td><th>Size / Theme</th><td>${selected.size} / ${selected.theme}</td></tr>
-        <tr><th>Amount</th><td>Rs. ${selected.amount.toLocaleString()}</td><th>Payment</th><td>${selected.paymentMethod}</td></tr>
-        <tr><th>Status</th><td>${selected.status}</td><th>Tracking</th><td>${selected.trackingNumber || "—"}</td></tr>
-        <tr><th>Print Shop</th><td>${selected.assignedShop || "—"}</td><th>Date</th><td>${selected.date}</td></tr>
-      </table>
-      ${imagesHtml ? `<h2>Customer Uploaded Images</h2><div class="images">${imagesHtml}</div>` : ""}
-      ${renderableImages.some(isLegacyBlobImage) ? `<p style="margin-top:16px;color:#b45309">Some artwork uses temporary browser image links and may not print after a refresh. New uploads are now stored more reliably.</p>` : ""}
-      <script>setTimeout(()=>window.print(),500)<\/script>
-      </body></html>
-    `);
+    printWindow.document.write(generateOrderHTML(selected) + `<script>setTimeout(()=>window.print(),500)<\/script>`);
     printWindow.document.close();
+  };
+
+  const handleDownloadOrder = () => {
+    if (!selected) return;
+    const html = generateOrderHTML(selected);
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${selected.id}-order-sheet.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({ title: "Downloaded", description: `Order sheet for ${selected.id} has been downloaded.` });
   };
 
   return (
