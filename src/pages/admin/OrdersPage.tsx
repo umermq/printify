@@ -163,11 +163,19 @@ const OrdersPage = () => {
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center justify-between">
-                  <span>Order {selected.id}</span>
-                  <Button variant="outline" size="sm" onClick={handlePrintOrder} className="gap-1">
-                    <Printer className="h-4 w-4" /> Print Order Sheet
-                  </Button>
+                  <div>
+                    <span>Batch # {selected.id}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={handleDownloadOrder} className="gap-1">
+                      <Download className="h-4 w-4" /> Download
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handlePrintOrder} className="gap-1">
+                      <Printer className="h-4 w-4" /> Print
+                    </Button>
+                  </div>
                 </DialogTitle>
+              </DialogHeader>
               </DialogHeader>
               <div className="grid gap-4 mt-2">
                 <div className="grid grid-cols-2 gap-4">
