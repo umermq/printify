@@ -122,7 +122,7 @@ const OrdersPage = () => {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-muted-foreground">
-              <th className="px-4 py-3 font-medium">Order ID</th>
+              <th className="px-4 py-3 font-medium">Batch #</th>
               <th className="px-4 py-3 font-medium">Customer</th>
               <th className="px-4 py-3 font-medium">Product</th>
               <th className="px-4 py-3 font-medium">Status</th>
