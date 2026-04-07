@@ -177,8 +177,8 @@ const OrdersPage = () => {
                     <span>Batch # {selected.id}</span>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={handleDownloadOrder} className="gap-1">
-                      <Download className="h-4 w-4" /> Download
+                    <Button variant="outline" size="sm" onClick={handleDownloadAllImages} className="gap-1">
+                      <Download className="h-4 w-4" /> Download Photos
                     </Button>
                     <Button variant="outline" size="sm" onClick={handlePrintOrder} className="gap-1">
                       <Printer className="h-4 w-4" /> Print
@@ -244,12 +244,18 @@ const OrdersPage = () => {
                       selectedImages.map((img, i) => (
                         <div
                           key={i}
-                          className="relative h-28 w-28 rounded-lg border border-border bg-muted overflow-hidden cursor-pointer group"
-                          onClick={() => setLightboxImg(img)}
+                          className="relative h-28 w-28 rounded-lg border border-border bg-muted overflow-hidden group"
                         >
-                          <img src={img} alt={`Upload ${i + 1}`} className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }} />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <ZoomIn className="h-5 w-5 text-white" />
+                          <div className="h-full w-full cursor-pointer" onClick={() => setLightboxImg(img)}>
+                            <img src={img} alt={`Upload ${i + 1}`} className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }} />
+                          </div>
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            <button onClick={() => setLightboxImg(img)} className="p-1 rounded-full bg-white/20 hover:bg-white/40">
+                              <ZoomIn className="h-4 w-4 text-white" />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); downloadImage(img, `${selected!.id}_photo_${i + 1}`); }} className="p-1 rounded-full bg-white/20 hover:bg-white/40">
+                              <Download className="h-4 w-4 text-white" />
+                            </button>
                           </div>
                         </div>
                       ))
