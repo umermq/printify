@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Menu, User, Award, Shield, Truck, CreditCard } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ShoppingCart, Menu, User, LogOut, Award, Shield, Truck, CreditCard } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "@/components/Logo";
@@ -17,8 +18,15 @@ const navLinks = [
 
 export const Header = () => {
   const { totalItems } = useCart();
+  const { user, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
@@ -60,11 +68,17 @@ export const Header = () => {
               )}
             </Button>
           </Link>
-          <Link to="/login">
-            <Button variant="ghost" size="icon" className="hover:bg-muted transition-colors duration-300">
-              <User className="h-4 w-4" strokeWidth={1.5} />
+          {user ? (
+            <Button variant="ghost" size="icon" onClick={handleSignOut} className="hover:bg-muted transition-colors duration-300" title="Sign Out">
+              <LogOut className="h-4 w-4" strokeWidth={1.5} />
             </Button>
-          </Link>
+          ) : (
+            <Link to="/login">
+              <Button variant="ghost" size="icon" className="hover:bg-muted transition-colors duration-300">
+                <User className="h-4 w-4" strokeWidth={1.5} />
+              </Button>
+            </Link>
+          )}
 
           {/* Mobile menu */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -88,13 +102,22 @@ export const Header = () => {
                     {link.label}
                   </Link>
                 ))}
-                <Link
-                  to="/login"
-                  onClick={() => setMobileOpen(false)}
-                  className="mt-4 py-3 text-sm font-medium tracking-widest uppercase text-gold hover:opacity-75 transition-opacity duration-300"
-                >
-                  Login / Register
-                </Link>
+                {user ? (
+                  <button
+                    onClick={() => { handleSignOut(); setMobileOpen(false); }}
+                    className="mt-4 py-3 text-sm font-medium tracking-widest uppercase text-gold hover:opacity-75 transition-opacity duration-300 text-left"
+                  >
+                    Sign Out
+                  </button>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="mt-4 py-3 text-sm font-medium tracking-widest uppercase text-gold hover:opacity-75 transition-opacity duration-300"
+                  >
+                    Login / Register
+                  </Link>
+                )}
               </nav>
             </SheetContent>
           </Sheet>

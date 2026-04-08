@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-route
 import { CartProvider } from "@/contexts/CartContext";
 import { OrderProvider } from "@/contexts/OrderContext";
 import { ProductProvider } from "@/contexts/ProductContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { Header, Footer } from "@/components/Layout";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import Index from "./pages/Index";
@@ -26,6 +27,7 @@ import CMSPagesPage from "./pages/admin/CMSPagesPage";
 import FAQsAdminPage from "./pages/admin/FAQsAdminPage";
 import ContactSubmissionsPage from "./pages/admin/ContactSubmissionsPage";
 import PrintShopDashboard from "./pages/PrintShopDashboard";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import AboutPage from "./pages/cms/AboutPage";
 import { PrivacyPolicyPage, TermsPage, RefundPolicyPage, ShippingPolicyPage, ReturnPolicyPage } from "./pages/cms/PolicyPages";
@@ -56,6 +58,7 @@ const AppLayout = () => {
           <Route path="/return-policy" element={<ReturnPolicyPage />} />
           <Route path="/faqs" element={<FAQsPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<DashboardPage />} />
             <Route path="orders" element={<OrdersPage />} />
@@ -93,7 +96,9 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <AppLayout />
+            <AuthProvider>
+              <AppLayout />
+            </AuthProvider>
           </BrowserRouter>
         </OrderProvider>
       </CartProvider>
