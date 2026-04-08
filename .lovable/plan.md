@@ -1,32 +1,46 @@
 
 
-# Fix Download: Customer Photos with Batch Number (Not HTML Sheet)
-
-## Problem
-The current "Download" button generates a full HTML order sheet. The user wants to **download the actual customer photos** individually, with filenames that include the batch/order number so they can match prints to orders easily.
+# Set Up Real Email/Password Authentication
 
 ## What changes
 
-### `src/pages/admin/OrdersPage.tsx`
+### 1. Create AuthContext (`src/contexts/AuthContext.tsx`)
+- Manages auth state using `supabase.auth.onAuthStateChange` (set up before `getSession`)
+- Exposes `user`, `session`, `loading`, `signUp`, `signIn`, `signOut`
+- No profiles table needed -- just uses built-in auth
 
-1. **Replace `handleDownloadOrder`** — instead of generating an HTML file, it downloads each customer-uploaded image individually. Each image is named like `ORD-916223-55_photo_1.jpg`, `ORD-916223-55_photo_2.jpg`, etc.
+### 2. Update Login page (`src/pages/Login.tsx`)
+- Wire `handleSubmit` to call `supabase.auth.signUp` (register) or `supabase.auth.signInWithPassword` (login)
+- Show loading state during auth calls
+- On successful login, redirect to `/` (or `/admin` based on role later)
+- On successful signup, show "Check your email to verify your account" message
+- Keep existing Zod validation and UI styling
 
-2. **Add per-image download buttons** — on each image thumbnail in the detail dialog, add a small download icon overlay so the user can download individual photos.
+### 3. Wrap app in AuthProvider (`src/App.tsx`)
+- Add `<AuthProvider>` inside `BrowserRouter`
 
-3. **"Download All" button** — the main Download button fetches all customer images and triggers individual downloads named with the batch number prefix.
+### 4. Protect admin routes (`src/pages/admin/AdminLayout.tsx`)
+- Check `useAuth()` -- if not authenticated, redirect to `/login`
+- Show loading spinner while auth state resolves
 
-4. **Remove the HTML order sheet generation** — remove `generateOrderHTML` and the HTML download logic. Keep the Print button for the order sheet if they still want to print metadata.
+### 5. Update Header (`src/components/Layout.tsx`)
+- If logged in: show user email/avatar and "Sign Out" button instead of "Login" link
+- If logged out: show "Login" link as before
 
-### Download naming format
-```
-{orderId}_photo_{index}.{ext}
-e.g. ORD-916223-55_photo_1.jpg
-     ORD-916223-55_photo_2.jpg
-```
+### 6. Add password reset flow
+- Add "Forgot Password?" link on login form
+- Create `/reset-password` page that handles the recovery token and lets users set a new password
 
-## Files to modify
+## Files to create/modify
 
 | File | Change |
 |---|---|
-| `src/pages/admin/OrdersPage.tsx` | Replace HTML download with image downloads; add per-image download; keep Print for order sheet |
+| `src/contexts/AuthContext.tsx` | New -- auth context with Supabase auth |
+| `src/pages/Login.tsx` | Wire to real Supabase auth |
+| `src/pages/ResetPassword.tsx` | New -- password reset page |
+| `src/App.tsx` | Add AuthProvider, add `/reset-password` route |
+| `src/pages/admin/AdminLayout.tsx` | Protect with auth check |
+| `src/components/Layout.tsx` | Show signed-in state in header |
+
+No database migrations needed -- using built-in auth only.
 
