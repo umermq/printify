@@ -5,6 +5,7 @@ import { Upload, Minus, Plus, ShoppingCart, Truck, Star, Shield } from "lucide-r
 import { useProducts } from "@/contexts/ProductContext";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import { SEOHead } from "@/components/SEOHead";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -80,8 +81,39 @@ const ProductDetail = () => {
     toast({ title: "Added to cart", description: `${product.name} × ${quantity}` });
   };
 
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description,
+    image: product.image,
+    category: product.category,
+    brand: { "@type": "Brand", name: "PixelCraft" },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.9",
+      reviewCount: "128",
+    },
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: "PKR",
+      lowPrice: Math.min(...product.sizes.map((s) => s.price)),
+      highPrice: Math.max(...product.sizes.map((s) => s.price)),
+      availability: "https://schema.org/InStock",
+      seller: { "@type": "Organization", name: "PixelCraft" },
+    },
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={`${product.name} – Custom ${product.category} in Pakistan | PixelCraft`}
+        description={`${product.description.slice(0, 155)}`}
+        path={`/product/${product.id}`}
+        ogImage={product.image}
+        type="product"
+        jsonLd={productJsonLd}
+      />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

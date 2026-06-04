@@ -10,7 +10,31 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+# AI / Answer engine crawlers (AEO)
+User-agent: GPTBot
 Allow: /
 
-Sitemap: https://printpk.com/sitemap.xml
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /print-shop
+Disallow: /login
+Disallow: /reset-password
+Disallow: /cart
+
+Sitemap: https://printpal-pk.lovable.app/sitemap.xml
