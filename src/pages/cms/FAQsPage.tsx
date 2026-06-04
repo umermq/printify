@@ -20,7 +20,20 @@ const FAQsPage = () => {
 
   return (
     <div>
-      <SEOHead title="FAQs | PixelCraft" description="Find answers to common questions about PixelCraft's custom photo printing services, delivery, payments, and returns." path="/faqs" />
+      <SEOHead
+        title="FAQs | PixelCraft – Photo Printing Pakistan"
+        description="Find answers to common questions about PixelCraft's custom photo printing services, delivery, payments, and returns."
+        path="/faqs"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqItems.map((f) => ({
+            "@type": "Question",
+            name: f.question,
+            acceptedAnswer: { "@type": "Answer", text: f.answer },
+          })),
+        }}
+      />
       <PageHero
         label="Help Center"
         title="Frequently Asked Questions"
