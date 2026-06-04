@@ -13,21 +13,85 @@ const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isRecovery, setIsRecovery] = useState(false);
+  const [status, setStatus] = useState<"checking" | "ready" | "invalid">("checking");
+  const [errorMsg, setErrorMsg] = useState<string>("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    if (hashParams.get("type") === "recovery") {
-      setIsRecovery(true);
-    }
+    let cancelled = false;
 
-    supabase.auth.onAuthStateChange((event) => {
+    const init = async () => {
+      const url = new URL(window.location.href);
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+
+      const errorDescription = hash.get("error_description") || url.searchParams.get("error_description");
+      if (errorDescription) {
+        if (!cancelled) {
+          setErrorMsg(errorDescription.replace(/\+/g, " "));
+          setStatus("invalid");
+        }
+        return;
+      }
+
+      // PKCE flow: ?code=...
+      const code = url.searchParams.get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (cancelled) return;
+        if (error) {
+          setErrorMsg(error.message);
+          setStatus("invalid");
+        } else {
+          // Clean URL
+          window.history.replaceState({}, "", window.location.pathname);
+          setStatus("ready");
+        }
+        return;
+      }
+
+      // Implicit flow: #access_token=...&type=recovery
+      const accessToken = hash.get("access_token");
+      const refreshToken = hash.get("refresh_token");
+      const type = hash.get("type");
+      if (accessToken && refreshToken && type === "recovery") {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (cancelled) return;
+        if (error) {
+          setErrorMsg(error.message);
+          setStatus("invalid");
+        } else {
+          window.history.replaceState({}, "", window.location.pathname);
+          setStatus("ready");
+        }
+        return;
+      }
+
+      // Fallback: check existing session
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (data.session) {
+        setStatus("ready");
+      } else {
+        setStatus("invalid");
+      }
+    };
+
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
-        setIsRecovery(true);
+        setStatus("ready");
       }
     });
+
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,15 +113,28 @@ const ResetPassword = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Success", description: "Password updated successfully!" });
+      await supabase.auth.signOut();
       navigate("/login");
     }
   };
 
-  if (!isRecovery) {
+  if (status === "checking") {
+    return (
+      <div className="min-h-screen bg-background">
+        <PageHero label="Account" title="Reset Password" subtitle="Verifying your reset link..." />
+        <div className="flex items-center justify-center px-4 py-12">
+          <p className="text-muted-foreground">Please wait...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "invalid") {
     return (
       <div className="min-h-screen bg-background">
         <PageHero label="Account" title="Reset Password" subtitle="Invalid or expired reset link" />
-        <div className="flex items-center justify-center px-4 py-12">
+        <div className="flex flex-col items-center justify-center px-4 py-12 gap-3">
+          {errorMsg && <p className="text-sm text-destructive">{errorMsg}</p>}
           <p className="text-muted-foreground">Please request a new password reset from the login page.</p>
         </div>
       </div>
