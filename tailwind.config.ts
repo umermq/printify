@@ -14,42 +14,12 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: [
-          'Cormorant Garamond',
-          'Georgia',
-          'serif'
-        ],
-        body: [
-          'Inter',
-          'system-ui',
-          'sans-serif'
-        ],
-        sans: [
-          'Inter',
-          'ui-sans-serif',
-          'system-ui',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          'Segoe UI',
-          'Roboto',
-          'Helvetica Neue',
-          'Arial',
-          'sans-serif'
-        ],
-        serif: [
-          'Cormorant Garamond',
-          'Georgia',
-          'ui-serif',
-          'serif'
-        ],
-        mono: [
-          'ui-monospace',
-          'SFMono-Regular',
-          'Menlo',
-          'Monaco',
-          'Consolas',
-          'monospace'
-        ]
+        heading: ['Poppins', 'system-ui', 'sans-serif'],
+        display: ['Poppins', 'system-ui', 'sans-serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        serif: ['Poppins', 'system-ui', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -86,6 +56,9 @@ export default {
           foreground: 'hsl(var(--card-foreground))'
         },
         gold: 'hsl(var(--gold))',
+        coral: 'hsl(var(--coral))',
+        cream: 'hsl(var(--cream))',
+        'amber-warm': 'hsl(var(--amber))',
         success: {
           DEFAULT: 'hsl(var(--success))',
           foreground: 'hsl(var(--success-foreground))'
