@@ -7,43 +7,49 @@ interface LogoProps {
 }
 
 const sizes = {
-  sm: { grid: 14, gap: 2, text: "text-lg" },
-  md: { grid: 16, gap: 2, text: "text-xl" },
-  lg: { grid: 20, gap: 3, text: "text-2xl" },
+  sm: { mark: 28, text: "text-lg" },
+  md: { mark: 34, text: "text-xl" },
+  lg: { mark: 44, text: "text-2xl" },
 };
 
 export const Logo = ({ className = "", linkTo = "/", size = "md" }: LogoProps) => {
   const s = sizes[size];
-  const totalSize = s.grid;
-  const cellSize = (totalSize - s.gap) / 2;
 
   const content = (
-    <div className={`flex items-center gap-3 group ${className}`}>
-      {/* 2×2 pixel grid mark */}
+    <div className={`flex items-center gap-2.5 group ${className}`}>
       <svg
-        width={totalSize}
-        height={totalSize}
-        viewBox={`0 0 ${totalSize} ${totalSize}`}
+        width={s.mark}
+        height={s.mark}
+        viewBox="0 0 40 40"
         fill="none"
-        className="flex-shrink-0"
+        className="flex-shrink-0 transition-transform duration-500 group-hover:rotate-45"
       >
-        <rect x={0} y={0} width={cellSize} height={cellSize} className="fill-gold" rx={1} />
-        <rect x={cellSize + s.gap} y={0} width={cellSize} height={cellSize} className="fill-gold/60" rx={1} />
-        <rect x={0} y={cellSize + s.gap} width={cellSize} height={cellSize} className="fill-gold/60" rx={1} />
-        <rect x={cellSize + s.gap} y={cellSize + s.gap} width={cellSize} height={cellSize} className="fill-gold" rx={1} />
+        {[0, 60, 120, 180, 240, 300].map((angle, i) => {
+          const colors = ["#FF6B35", "#F7931E", "#FFC9B5", "#FF6B35", "#F7931E", "#FFC9B5"];
+          return (
+            <ellipse
+              key={i}
+              cx="20"
+              cy="9"
+              rx="6"
+              ry="9"
+              fill={colors[i]}
+              transform={`rotate(${angle} 20 20)`}
+              opacity="0.92"
+            />
+          );
+        })}
+        <circle cx="20" cy="20" r="4" fill="#FFF8F2" />
       </svg>
-      <div className="flex flex-col leading-none">
-        <span className={`font-serif ${s.text} font-semibold tracking-widest text-foreground group-hover:text-gold transition-colors duration-500`}>
-          PixelCraft
-        </span>
-        <span className="accent-line mt-0.5 transition-all duration-500 group-hover:w-full" style={{ width: '100%' }} />
-      </div>
+      <span
+        className={`${s.text} font-bold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300`}
+        style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: "0.02em" }}
+      >
+        PixelCraft
+      </span>
     </div>
   );
 
-  if (linkTo) {
-    return <Link to={linkTo}>{content}</Link>;
-  }
-
+  if (linkTo) return <Link to={linkTo}>{content}</Link>;
   return content;
 };
