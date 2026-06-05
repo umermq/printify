@@ -1,46 +1,63 @@
+## Full Printy-Style Rebrand (Warm Playful Palette)
 
+Replace the luxury beige/gold theme with a warm, playful, Printy-inspired look across the storefront. Keep the **PixelCraft** name, drop gold + Cormorant Garamond, and rebuild the homepage with the four chosen Printy sections.
 
-# Set Up Real Email/Password Authentication
+### New Design System
 
-## What changes
+**Palette** (warm playful)
+- Primary `#FF6B35` (vivid orange) — buttons, accents
+- Secondary `#F7931E` (amber) — gradients, highlights
+- Soft accent `#FFC9B5` (coral cream) — decorative blobs, badges
+- Background `#FFF8F2` (warm cream) — base canvas
+- Foreground `#1A1A1A` charcoal; muted warm gray
 
-### 1. Create AuthContext (`src/contexts/AuthContext.tsx`)
-- Manages auth state using `supabase.auth.onAuthStateChange` (set up before `getSession`)
-- Exposes `user`, `session`, `loading`, `signUp`, `signIn`, `signOut`
-- No profiles table needed -- just uses built-in auth
+**Typography** — switch to playful sans
+- Headings: **Poppins** (700/800) — bold, rounded
+- Body: **Inter** (400/500)
+- Remove Cormorant Garamond import
 
-### 2. Update Login page (`src/pages/Login.tsx`)
-- Wire `handleSubmit` to call `supabase.auth.signUp` (register) or `supabase.auth.signInWithPassword` (login)
-- Show loading state during auth calls
-- On successful login, redirect to `/` (or `/admin` based on role later)
-- On successful signup, show "Check your email to verify your account" message
-- Keep existing Zod validation and UI styling
+**Shapes & motion**
+- Pill-shaped buttons (`rounded-full`), large CTAs
+- Soft gradient hero (orange → coral)
+- Floating decorative SVG shapes (circles, squiggles, blurred blobs) absolutely positioned in hero
+- Soft shadows with warm orange tint
+- Subtle float / fade-in animations on scroll
 
-### 3. Wrap app in AuthProvider (`src/App.tsx`)
-- Add `<AuthProvider>` inside `BrowserRouter`
-
-### 4. Protect admin routes (`src/pages/admin/AdminLayout.tsx`)
-- Check `useAuth()` -- if not authenticated, redirect to `/login`
-- Show loading spinner while auth state resolves
-
-### 5. Update Header (`src/components/Layout.tsx`)
-- If logged in: show user email/avatar and "Sign Out" button instead of "Login" link
-- If logged out: show "Login" link as before
-
-### 6. Add password reset flow
-- Add "Forgot Password?" link on login form
-- Create `/reset-password` page that handles the recovery token and lets users set a new password
-
-## Files to create/modify
+### Files to change
 
 | File | Change |
 |---|---|
-| `src/contexts/AuthContext.tsx` | New -- auth context with Supabase auth |
-| `src/pages/Login.tsx` | Wire to real Supabase auth |
-| `src/pages/ResetPassword.tsx` | New -- password reset page |
-| `src/App.tsx` | Add AuthProvider, add `/reset-password` route |
-| `src/pages/admin/AdminLayout.tsx` | Protect with auth check |
-| `src/components/Layout.tsx` | Show signed-in state in header |
+| `src/index.css` | Replace HSL tokens (background, primary, accent, gold→orange), swap font imports to Poppins+Inter, update `.btn-luxury`/`.btn-gold` to pill warm-orange variants, update gradients, shadows, `.section-label` color |
+| `tailwind.config.ts` | Update `fontFamily` (sans: Inter, display: Poppins), add `primary-glow`, `coral`, `cream` tokens |
+| `src/components/Logo.tsx` | Replace 2x2 gold grid with colorful daisy/burst mark (orange + coral + amber petals), Poppins wordmark |
+| `src/components/Layout.tsx` | Header: pill nav, rounded cart badge in orange; Footer: cream-on-charcoal already OK — restyle accent links to orange; remove gold class usage |
+| `src/components/PageHero.tsx` | Convert luxury hero pattern to playful: gradient bg, blob decorations, large Poppins headline with single coral-highlighted word |
+| `src/pages/Index.tsx` | Rebuild homepage with 4 sections: (1) **Hero** — split layout, model/product image in circular gradient frame, floating product card + decorative SVG shapes; (2) **What we offer** — 4-icon feature grid with rounded cards; (3) **Product grid** — hover-lift cards with pill price tags; (4) **Process steps** — 3-4 numbered steps with illustrations |
+| `src/components/WhatsAppButton.tsx` | Keep green (brand standard) but match new shadow style |
+| `src/pages/Products.tsx`, `src/pages/ProductDetail.tsx`, `src/pages/Cart.tsx` | Restyle buttons/cards to new tokens (no structural change — tokens cascade) |
+| `src/pages/cms/*`, `src/pages/Login.tsx`, `src/pages/ResetPassword.tsx` | Inherit new tokens automatically; spot-fix any hardcoded gold classes |
 
-No database migrations needed -- using built-in auth only.
+### Decorative assets
 
+Generate 3 lightweight SVG/PNG decorations into `src/assets/`:
+- Soft orange blur blob
+- Coral squiggle line
+- Small geometric shapes set (circle, triangle, square)
+
+### Hero image
+
+Generate one new hero product image: a person holding a custom-printed photo book/mug against a soft gradient circle, transparent background — saved to `src/assets/hero-printy.png`.
+
+### Out of scope (admin stays luxury-functional)
+- `src/pages/admin/*` and `src/pages/PrintShopDashboard.tsx` — these stay on current SaaS look; only minor token-cascade changes
+- No backend / data changes
+- No new routes
+
+### Memory updates
+- Update `mem://style/color-palette` → warm orange + coral + cream (replace gold)
+- Update `mem://style/logo` → colorful daisy mark + Poppins wordmark
+- Update Core memory: headings Poppins, not Cormorant Garamond
+- Update `mem://style/design-principles` → playful, decorative shapes allowed, pill buttons, warm gradients OK
+
+### Result
+Homepage and all storefront pages match the Printy energy — bright, warm, friendly, with floating decor and pill CTAs — while keeping PixelCraft as the brand name and Pakistan/COD context intact.
