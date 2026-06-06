@@ -26,6 +26,7 @@ import SettingsPage from "./pages/admin/SettingsPage";
 import CMSPagesPage from "./pages/admin/CMSPagesPage";
 import FAQsAdminPage from "./pages/admin/FAQsAdminPage";
 import ContactSubmissionsPage from "./pages/admin/ContactSubmissionsPage";
+import SEOPage from "./pages/admin/SEOPage";
 import PrintShopDashboard from "./pages/PrintShopDashboard";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -71,6 +72,7 @@ const AppLayout = () => {
             <Route path="pages" element={<CMSPagesPage />} />
             <Route path="faqs" element={<FAQsAdminPage />} />
             <Route path="contacts" element={<ContactSubmissionsPage />} />
+            <Route path="seo" element={<SEOPage />} />
           </Route>
           <Route path="/print-shop/*" element={<PrintShopDashboard />} />
           <Route path="/print-shops" element={<Navigate to="/admin/print-shops" replace />} />

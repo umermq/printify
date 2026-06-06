@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, ShoppingBag, Users, Package, Settings, BarChart3,
   ChevronLeft, ChevronRight, Image, Layers, LogOut, Bell, Search,
-  FileText, HelpCircle, MessageSquare
+  FileText, HelpCircle, MessageSquare, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ const sidebarLinks = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/admin" },
   { label: "Orders", icon: ShoppingBag, to: "/admin/orders" },
   { label: "Products", icon: Package, to: "/admin/products" },
+  { label: "SEO / AEO / GEO", icon: Sparkles, to: "/admin/seo" },
   { label: "Categories", icon: Layers, to: "/admin/categories" },
   { label: "Customers", icon: Users, to: "/admin/customers" },
   { label: "Print Shops", icon: Image, to: "/admin/print-shops" },
