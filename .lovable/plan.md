@@ -1,63 +1,61 @@
-## Full Printy-Style Rebrand (Warm Playful Palette)
+## Goal
+Add an **SEO / AEO / GEO** admin page (matches the screenshot reference) where you can view, edit, AI-generate, and bulk-optimize meta titles & descriptions for every product. Will also feed these into the live product pages so search engines + AI engines pick them up.
 
-Replace the luxury beige/gold theme with a warm, playful, Printy-inspired look across the storefront. Keep the **PixelCraft** name, drop gold + Cormorant Garamond, and rebuild the homepage with the four chosen Printy sections.
+## What gets built
 
-### New Design System
+### 1. New admin page: `/admin/seo`
+Sidebar link "SEO / AEO / GEO" added to `AdminLayout`.
 
-**Palette** (warm playful)
-- Primary `#FF6B35` (vivid orange) — buttons, accents
-- Secondary `#F7931E` (amber) — gradients, highlights
-- Soft accent `#FFC9B5` (coral cream) — decorative blobs, badges
-- Background `#FFF8F2` (warm cream) — base canvas
-- Foreground `#1A1A1A` charcoal; muted warm gray
+Layout (matching your reference):
+- **Top stats bar**: Total products • Optimized • Missing • Coverage %
+- **"Optimize all missing (N)"** button — runs AI generation in batch for every product missing meta fields
+- **Search box** + **All / Missing only** filter pills
+- **Table**: Product · Meta title · Meta description · Status (Optimized / Missing) · Actions (Edit, Regenerate)
+- **Edit dialog**: editable Meta title, Meta description, Focus keyword, Geo target (city/country for GEO), AEO Q&A snippet (for AI answer engines), plus "Regenerate with AI" button
+- **Per-row Regenerate** = single AI call to refresh that product's meta
 
-**Typography** — switch to playful sans
-- Headings: **Poppins** (700/800) — bold, rounded
-- Body: **Inter** (400/500)
-- Remove Cormorant Garamond import
+### 2. Data model
+Extend the `Product` interface with optional SEO fields:
+```
+seo?: {
+  metaTitle?: string;
+  metaDescription?: string;
+  focusKeyword?: string;
+  geoTarget?: string;     // e.g. "Lahore, Pakistan"
+  aeoSnippet?: string;    // 1-2 sentence direct answer for AI engines
+  updatedAt?: string;
+}
+```
+Stored in the existing `ProductContext` (localStorage today, same as products). `updateProduct` already handles persistence — no schema migration needed.
 
-**Shapes & motion**
-- Pill-shaped buttons (`rounded-full`), large CTAs
-- Soft gradient hero (orange → coral)
-- Floating decorative SVG shapes (circles, squiggles, blurred blobs) absolutely positioned in hero
-- Soft shadows with warm orange tint
-- Subtle float / fade-in animations on scroll
+### 3. AI generation (Lovable AI Gateway — no API key required)
+A single edge function `seo-generate` that takes `{ product }` and returns the SEO block. Uses `google/gemini-2.5-flash` (fast + cheap, good quality for meta copy). Prompt is tuned for:
+- **SEO**: keyword-rich meta title (≤ 60 chars) + meta description (≤ 160 chars)
+- **AEO**: a short direct-answer snippet optimized for ChatGPT / Perplexity / Google AI Overview
+- **GEO**: localizes to Pakistan market (PKR pricing context, city mentions when relevant)
 
-### Files to change
+Frontend calls `supabase.functions.invoke("seo-generate", { body: { product } })`. Batch "Optimize all missing" loops sequentially with a small delay to respect rate limits and shows progress (`Optimizing 5/23…`).
+
+### 4. Live SEO output on product pages
+`ProductDetail.tsx` already uses `SEOHead`. Update it to prefer `product.seo.metaTitle` / `product.seo.metaDescription` when present, and inject the AEO snippet into the Product JSON-LD as a `description` + a small `FAQPage` schema when `aeoSnippet` exists. GEO target gets added to JSON-LD `areaServed`.
+
+## Files touched
 
 | File | Change |
 |---|---|
-| `src/index.css` | Replace HSL tokens (background, primary, accent, gold→orange), swap font imports to Poppins+Inter, update `.btn-luxury`/`.btn-gold` to pill warm-orange variants, update gradients, shadows, `.section-label` color |
-| `tailwind.config.ts` | Update `fontFamily` (sans: Inter, display: Poppins), add `primary-glow`, `coral`, `cream` tokens |
-| `src/components/Logo.tsx` | Replace 2x2 gold grid with colorful daisy/burst mark (orange + coral + amber petals), Poppins wordmark |
-| `src/components/Layout.tsx` | Header: pill nav, rounded cart badge in orange; Footer: cream-on-charcoal already OK — restyle accent links to orange; remove gold class usage |
-| `src/components/PageHero.tsx` | Convert luxury hero pattern to playful: gradient bg, blob decorations, large Poppins headline with single coral-highlighted word |
-| `src/pages/Index.tsx` | Rebuild homepage with 4 sections: (1) **Hero** — split layout, model/product image in circular gradient frame, floating product card + decorative SVG shapes; (2) **What we offer** — 4-icon feature grid with rounded cards; (3) **Product grid** — hover-lift cards with pill price tags; (4) **Process steps** — 3-4 numbered steps with illustrations |
-| `src/components/WhatsAppButton.tsx` | Keep green (brand standard) but match new shadow style |
-| `src/pages/Products.tsx`, `src/pages/ProductDetail.tsx`, `src/pages/Cart.tsx` | Restyle buttons/cards to new tokens (no structural change — tokens cascade) |
-| `src/pages/cms/*`, `src/pages/Login.tsx`, `src/pages/ResetPassword.tsx` | Inherit new tokens automatically; spot-fix any hardcoded gold classes |
+| `src/data/products.ts` | Add optional `seo` field to `Product` interface |
+| `src/contexts/ProductContext.tsx` | No structural change — uses existing update flow |
+| `src/pages/admin/AdminLayout.tsx` | Add "SEO / AEO / GEO" sidebar link (Sparkles icon) |
+| `src/pages/admin/SEOPage.tsx` | NEW — full page (stats, table, filters, edit dialog) |
+| `src/App.tsx` | Register `/admin/seo` route |
+| `src/pages/ProductDetail.tsx` | Use `product.seo.*` when available; richer JSON-LD |
+| `supabase/functions/seo-generate/index.ts` | NEW — calls Lovable AI Gateway, returns SEO block |
+| `supabase/config.toml` | Register the new function with `verify_jwt = false` |
 
-### Decorative assets
+## Out of scope (can add later if you want)
+- SEO for category pages and CMS pages (this round = products only, matching your screenshot)
+- Scheduled re-optimization / cron
+- Sitemap auto-regeneration from SEO data
+- Multilingual (en/ur) meta — current pass = English only
 
-Generate 3 lightweight SVG/PNG decorations into `src/assets/`:
-- Soft orange blur blob
-- Coral squiggle line
-- Small geometric shapes set (circle, triangle, square)
-
-### Hero image
-
-Generate one new hero product image: a person holding a custom-printed photo book/mug against a soft gradient circle, transparent background — saved to `src/assets/hero-printy.png`.
-
-### Out of scope (admin stays luxury-functional)
-- `src/pages/admin/*` and `src/pages/PrintShopDashboard.tsx` — these stay on current SaaS look; only minor token-cascade changes
-- No backend / data changes
-- No new routes
-
-### Memory updates
-- Update `mem://style/color-palette` → warm orange + coral + cream (replace gold)
-- Update `mem://style/logo` → colorful daisy mark + Poppins wordmark
-- Update Core memory: headings Poppins, not Cormorant Garamond
-- Update `mem://style/design-principles` → playful, decorative shapes allowed, pill buttons, warm gradients OK
-
-### Result
-Homepage and all storefront pages match the Printy energy — bright, warm, friendly, with floating decor and pill CTAs — while keeping PixelCraft as the brand name and Pakistan/COD context intact.
+Want me to build it as scoped, or also include categories + CMS pages in the same page?

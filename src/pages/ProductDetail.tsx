@@ -81,34 +81,56 @@ const ProductDetail = () => {
     toast({ title: "Added to cart", description: `${product.name} × ${quantity}` });
   };
 
-  const productJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description: product.description,
-    image: product.image,
-    category: product.category,
-    brand: { "@type": "Brand", name: "PixelCraft" },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.9",
-      reviewCount: "128",
+  const seo = product.seo;
+  const seoTitle = seo?.metaTitle || `${product.name} – Custom ${product.category} in Pakistan | PixelCraft`;
+  const seoDesc = seo?.metaDescription || product.description.slice(0, 155);
+  const geoTarget = seo?.geoTarget || "Pakistan";
+
+  const productJsonLd: object[] = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      description: seo?.aeoSnippet || product.description,
+      image: product.image,
+      category: product.category,
+      brand: { "@type": "Brand", name: "PixelCraft" },
+      areaServed: geoTarget,
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: "4.9",
+        reviewCount: "128",
+      },
+      offers: {
+        "@type": "AggregateOffer",
+        priceCurrency: "PKR",
+        lowPrice: Math.min(...product.sizes.map((s) => s.price)),
+        highPrice: Math.max(...product.sizes.map((s) => s.price)),
+        availability: "https://schema.org/InStock",
+        seller: { "@type": "Organization", name: "PixelCraft", areaServed: geoTarget },
+      },
     },
-    offers: {
-      "@type": "AggregateOffer",
-      priceCurrency: "PKR",
-      lowPrice: Math.min(...product.sizes.map((s) => s.price)),
-      highPrice: Math.max(...product.sizes.map((s) => s.price)),
-      availability: "https://schema.org/InStock",
-      seller: { "@type": "Organization", name: "PixelCraft" },
-    },
-  };
+  ];
+
+  if (seo?.aeoSnippet) {
+    productJsonLd.push({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: `What is ${product.name}?`,
+          acceptedAnswer: { "@type": "Answer", text: seo.aeoSnippet },
+        },
+      ],
+    });
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title={`${product.name} – Custom ${product.category} in Pakistan | PixelCraft`}
-        description={`${product.description.slice(0, 155)}`}
+        title={seoTitle}
+        description={seoDesc}
         path={`/product/${product.id}`}
         ogImage={product.image}
         type="product"

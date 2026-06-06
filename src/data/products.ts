@@ -1,3 +1,12 @@
+export interface ProductSEO {
+  metaTitle?: string;
+  metaDescription?: string;
+  focusKeyword?: string;
+  geoTarget?: string;
+  aeoSnippet?: string;
+  updatedAt?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -10,6 +19,7 @@ export interface Product {
   deliveryDays: string;
   image: string;
   featured: boolean;
+  seo?: ProductSEO;
 }
 
 export interface Category {
