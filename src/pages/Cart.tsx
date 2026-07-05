@@ -304,12 +304,14 @@ const Cart = () => {
                 ))}
                 <div className="flex justify-between text-muted-foreground">
                   <span>Delivery</span>
-                  <span className="text-gold">Free</span>
+                  {shippingFee > 0
+                    ? <span className="text-foreground">PKR {shippingFee.toLocaleString()}</span>
+                    : <span className="text-gold">Free</span>}
                 </div>
                 <div className="h-px bg-border" />
                 <div className="flex justify-between font-serif text-lg font-semibold text-foreground">
                   <span>Total</span>
-                  <span>PKR {totalPrice.toLocaleString()}</span>
+                  <span>PKR {grandTotal.toLocaleString()}</span>
                 </div>
               </div>
               <button type="submit" className="btn-luxury mt-6 w-full flex items-center justify-center gap-2">
