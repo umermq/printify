@@ -280,17 +280,23 @@ const ProductDetail = () => {
             {/* Upload */}
             <div className="mt-6">
               <h3 className="mb-3 text-xs font-medium tracking-widest uppercase text-foreground">
-                Upload Your Photos
+                Upload Your Photos <span className="text-destructive">*</span>
               </h3>
               <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} />
               <button
                 onClick={() => fileRef.current?.click()}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gold/50 bg-card py-5 text-xs font-medium tracking-widest uppercase text-gold transition-all duration-300 hover:border-gold hover:bg-gold/5"
+                className={`flex w-full items-center justify-center gap-2 rounded-lg border border-dashed py-5 text-xs font-medium tracking-widest uppercase transition-all duration-300 ${
+                  photosMissing
+                    ? "border-destructive/60 bg-destructive/5 text-destructive hover:border-destructive"
+                    : "border-gold/50 bg-card text-gold hover:border-gold hover:bg-gold/5"
+                }`}
               >
                 <Upload className="h-4 w-4" strokeWidth={1.5} />
                 Choose Photos
               </button>
-              <p className="mt-2 text-xs text-muted-foreground">JPG, PNG up to 10MB each</p>
+              <p className={`mt-2 text-xs ${photosMissing ? "text-destructive" : "text-muted-foreground"}`}>
+                {photosMissing ? "* Please upload at least one photo to continue" : "JPG, PNG up to 10MB each"}
+              </p>
             </div>
 
             <div className="my-6 h-px bg-border" />
