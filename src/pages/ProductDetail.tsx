@@ -69,6 +69,10 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
+    if (photosMissing) {
+      toast({ title: "Photo required", description: "Please upload at least one photo before adding to cart.", variant: "destructive" });
+      return;
+    }
     addItem({
       id: product.id,
       name: product.name,
