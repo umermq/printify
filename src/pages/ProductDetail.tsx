@@ -323,7 +323,8 @@ const ProductDetail = () => {
               {/* Add to Cart */}
               <button
                 onClick={handleAddToCart}
-                className="btn-luxury flex-1 flex items-center justify-center gap-2"
+                disabled={photosMissing}
+                className="btn-luxury flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ShoppingCart className="h-4 w-4" strokeWidth={1.5} />
                 Add to Cart
