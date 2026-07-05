@@ -31,6 +31,25 @@ const Cart = () => {
     name: "", phone: "", email: "", address: "", city: "", paymentMethod: "cod" as "cod" | "online",
   });
 
+  // Shipping fee from admin settings (single source of truth)
+  const [shippingFee, setShippingFee] = useState<number>(0);
+  useEffect(() => {
+    const read = () => {
+      try {
+        const raw = localStorage.getItem("pixelcraft_settings");
+        if (raw) {
+          const s = JSON.parse(raw);
+          setShippingFee(Number(s.shippingFee) || 0);
+        }
+      } catch {}
+    };
+    read();
+    const handler = (e: StorageEvent) => { if (e.key === "pixelcraft_settings") read(); };
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, []);
+  const grandTotal = totalPrice + shippingFee;
+
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
     const result = checkoutSchema.safeParse(form);
