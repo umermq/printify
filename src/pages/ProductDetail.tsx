@@ -267,6 +267,11 @@ const ProductDetail = () => {
                   >
                     <img src={theme.image} alt={theme.name} className="h-4 w-4 rounded object-cover" />
                     {theme.name}
+                    {theme.priceModifier ? (
+                      <span className={selectedTheme === i ? "ml-1 opacity-80" : "ml-1 text-muted-foreground"}>
+                        {theme.priceModifier > 0 ? "+" : ""}PKR {theme.priceModifier.toLocaleString()}
+                      </span>
+                    ) : null}
                   </button>
                 ))}
               </div>
