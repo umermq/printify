@@ -68,7 +68,7 @@ const ProductsPage = () => {
     setForm(f => ({ ...f, sizes }));
   };
 
-  const updateTheme = (idx: number, key: "id" | "name" | "preview", val: string) => {
+  const updateTheme = (idx: number, key: "id" | "name" | "preview" | "priceModifier", val: string | number) => {
     const themes = [...form.themes];
     themes[idx] = { ...themes[idx], [key]: val };
     setForm(f => ({ ...f, themes }));
@@ -179,11 +179,13 @@ const ProductsPage = () => {
 
             {/* Themes */}
             <div>
-              <div className="flex items-center justify-between"><Label>Themes</Label><Button variant="outline" size="sm" onClick={() => setForm(f => ({ ...f, themes: [...f.themes, { id: "", name: "", preview: "", image: "" }] }))}>+ Add Theme</Button></div>
+              <div className="flex items-center justify-between"><Label>Themes</Label><Button variant="outline" size="sm" onClick={() => setForm(f => ({ ...f, themes: [...f.themes, { id: "", name: "", preview: "", image: "", priceModifier: 0 }] }))}>+ Add Theme</Button></div>
+              <p className="text-xs text-muted-foreground mt-1">Price + / − adds to the selected size price (leave 0 for no change).</p>
               {form.themes.map((t, i) => (
                 <div key={i} className="flex gap-2 mt-2 items-center">
                   <Input placeholder="Name" value={t.name} onChange={e => updateTheme(i, "name", e.target.value)} className="flex-1" />
-                  <Input placeholder="Preview emoji" value={t.preview} onChange={e => updateTheme(i, "preview", e.target.value)} className="w-24" />
+                  <Input placeholder="Emoji" value={t.preview} onChange={e => updateTheme(i, "preview", e.target.value)} className="w-20" />
+                  <Input type="number" placeholder="+/- Price" value={t.priceModifier ?? 0} onChange={e => updateTheme(i, "priceModifier", Number(e.target.value))} className="w-28" />
                   {form.themes.length > 1 && <Button variant="ghost" size="icon" onClick={() => setForm(f => ({ ...f, themes: f.themes.filter((_, idx) => idx !== i) }))}><Trash2 className="h-3 w-3" /></Button>}
                 </div>
               ))}

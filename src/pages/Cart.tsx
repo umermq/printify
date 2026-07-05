@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Trash2, Minus, Plus, ShoppingBag, ArrowRight } from "lucide-react";
@@ -30,6 +30,25 @@ const Cart = () => {
   const [form, setForm] = useState({
     name: "", phone: "", email: "", address: "", city: "", paymentMethod: "cod" as "cod" | "online",
   });
+
+  // Shipping fee from admin settings (single source of truth)
+  const [shippingFee, setShippingFee] = useState<number>(0);
+  useEffect(() => {
+    const read = () => {
+      try {
+        const raw = localStorage.getItem("pixelcraft_settings");
+        if (raw) {
+          const s = JSON.parse(raw);
+          setShippingFee(Number(s.shippingFee) || 0);
+        }
+      } catch {}
+    };
+    read();
+    const handler = (e: StorageEvent) => { if (e.key === "pixelcraft_settings") read(); };
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, []);
+  const grandTotal = totalPrice + shippingFee;
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,12 +170,14 @@ const Cart = () => {
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Delivery</span>
-                  <span className="text-gold">Free</span>
+                  {shippingFee > 0
+                    ? <span className="text-foreground">PKR {shippingFee.toLocaleString()}</span>
+                    : <span className="text-gold">Free</span>}
                 </div>
                 <div className="h-px bg-border" />
                 <div className="flex justify-between font-serif text-lg font-semibold text-foreground">
                   <span>Total</span>
-                  <span>PKR {totalPrice.toLocaleString()}</span>
+                  <span>PKR {grandTotal.toLocaleString()}</span>
                 </div>
               </div>
               <button
@@ -283,12 +304,14 @@ const Cart = () => {
                 ))}
                 <div className="flex justify-between text-muted-foreground">
                   <span>Delivery</span>
-                  <span className="text-gold">Free</span>
+                  {shippingFee > 0
+                    ? <span className="text-foreground">PKR {shippingFee.toLocaleString()}</span>
+                    : <span className="text-gold">Free</span>}
                 </div>
                 <div className="h-px bg-border" />
                 <div className="flex justify-between font-serif text-lg font-semibold text-foreground">
                   <span>Total</span>
-                  <span>PKR {totalPrice.toLocaleString()}</span>
+                  <span>PKR {grandTotal.toLocaleString()}</span>
                 </div>
               </div>
               <button type="submit" className="btn-luxury mt-6 w-full flex items-center justify-center gap-2">

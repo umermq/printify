@@ -32,7 +32,9 @@ const ProductDetail = () => {
     );
   }
 
-  const currentPrice = product.sizes[selectedSize].price;
+  const themeModifier = product.themes[selectedTheme]?.priceModifier || 0;
+  const currentPrice = product.sizes[selectedSize].price + themeModifier;
+  const photosMissing = uploadedImages.length === 0;
 
   const fileToDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -67,6 +69,10 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
+    if (photosMissing) {
+      toast({ title: "Photo required", description: "Please upload at least one photo before adding to cart.", variant: "destructive" });
+      return;
+    }
     addItem({
       id: product.id,
       name: product.name,
@@ -261,6 +267,11 @@ const ProductDetail = () => {
                   >
                     <img src={theme.image} alt={theme.name} className="h-4 w-4 rounded object-cover" />
                     {theme.name}
+                    {theme.priceModifier ? (
+                      <span className={selectedTheme === i ? "ml-1 opacity-80" : "ml-1 text-muted-foreground"}>
+                        {theme.priceModifier > 0 ? "+" : ""}PKR {theme.priceModifier.toLocaleString()}
+                      </span>
+                    ) : null}
                   </button>
                 ))}
               </div>
@@ -269,17 +280,23 @@ const ProductDetail = () => {
             {/* Upload */}
             <div className="mt-6">
               <h3 className="mb-3 text-xs font-medium tracking-widest uppercase text-foreground">
-                Upload Your Photos
+                Upload Your Photos <span className="text-destructive">*</span>
               </h3>
               <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} />
               <button
                 onClick={() => fileRef.current?.click()}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gold/50 bg-card py-5 text-xs font-medium tracking-widest uppercase text-gold transition-all duration-300 hover:border-gold hover:bg-gold/5"
+                className={`flex w-full items-center justify-center gap-2 rounded-lg border border-dashed py-5 text-xs font-medium tracking-widest uppercase transition-all duration-300 ${
+                  photosMissing
+                    ? "border-destructive/60 bg-destructive/5 text-destructive hover:border-destructive"
+                    : "border-gold/50 bg-card text-gold hover:border-gold hover:bg-gold/5"
+                }`}
               >
                 <Upload className="h-4 w-4" strokeWidth={1.5} />
                 Choose Photos
               </button>
-              <p className="mt-2 text-xs text-muted-foreground">JPG, PNG up to 10MB each</p>
+              <p className={`mt-2 text-xs ${photosMissing ? "text-destructive" : "text-muted-foreground"}`}>
+                {photosMissing ? "* Please upload at least one photo to continue" : "JPG, PNG up to 10MB each"}
+              </p>
             </div>
 
             <div className="my-6 h-px bg-border" />
@@ -306,7 +323,8 @@ const ProductDetail = () => {
               {/* Add to Cart */}
               <button
                 onClick={handleAddToCart}
-                className="btn-luxury flex-1 flex items-center justify-center gap-2"
+                disabled={photosMissing}
+                className="btn-luxury flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ShoppingCart className="h-4 w-4" strokeWidth={1.5} />
                 Add to Cart

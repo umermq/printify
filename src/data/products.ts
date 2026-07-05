@@ -15,7 +15,7 @@ export interface Product {
   description: string;
   basePrice: number;
   sizes: { label: string; price: number }[];
-  themes: { id: string; name: string; preview: string; image: string }[];
+  themes: { id: string; name: string; preview: string; image: string; priceModifier?: number }[];
   deliveryDays: string;
   image: string;
   featured: boolean;
