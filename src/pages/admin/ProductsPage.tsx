@@ -68,7 +68,7 @@ const ProductsPage = () => {
     setForm(f => ({ ...f, sizes }));
   };
 
-  const updateTheme = (idx: number, key: "id" | "name" | "preview", val: string) => {
+  const updateTheme = (idx: number, key: "id" | "name" | "preview" | "priceModifier", val: string | number) => {
     const themes = [...form.themes];
     themes[idx] = { ...themes[idx], [key]: val };
     setForm(f => ({ ...f, themes }));
