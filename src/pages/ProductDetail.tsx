@@ -32,7 +32,9 @@ const ProductDetail = () => {
     );
   }
 
-  const currentPrice = product.sizes[selectedSize].price;
+  const themeModifier = product.themes[selectedTheme]?.priceModifier || 0;
+  const currentPrice = product.sizes[selectedSize].price + themeModifier;
+  const photosMissing = uploadedImages.length === 0;
 
   const fileToDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
