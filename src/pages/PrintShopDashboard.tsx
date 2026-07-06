@@ -122,4 +122,10 @@ const PrintShopDashboardInner = () => {
   );
 };
 
+const PrintShopDashboard = () => (
+  <RoleGuard role="print_shop">
+    <PrintShopDashboardInner />
+  </RoleGuard>
+);
+
 export default PrintShopDashboard;
