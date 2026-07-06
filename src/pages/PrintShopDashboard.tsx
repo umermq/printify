@@ -21,7 +21,7 @@ const assignedJobs = [
   { id: "ORD-007", customer: "Bilal Shah", product: "Photo Mug 11oz", status: "Awaiting Approval", assignedDate: "Yesterday" },
 ];
 
-const PrintShopDashboard = () => {
+const PrintShopDashboardInner = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
 
