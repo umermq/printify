@@ -101,4 +101,10 @@ const AdminLayoutInner = () => {
   );
 };
 
+const AdminLayout = () => (
+  <RoleGuard role="admin">
+    <AdminLayoutInner />
+  </RoleGuard>
+);
+
 export default AdminLayout;
