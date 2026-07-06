@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { RoleGuard } from "@/components/RoleGuard";
 
 const sidebarLinks = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/print-shop" },
@@ -20,7 +21,7 @@ const assignedJobs = [
   { id: "ORD-007", customer: "Bilal Shah", product: "Photo Mug 11oz", status: "Awaiting Approval", assignedDate: "Yesterday" },
 ];
 
-const PrintShopDashboard = () => {
+const PrintShopDashboardInner = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
 
@@ -120,5 +121,11 @@ const PrintShopDashboard = () => {
     </div>
   );
 };
+
+const PrintShopDashboard = () => (
+  <RoleGuard role="print_shop">
+    <PrintShopDashboardInner />
+  </RoleGuard>
+);
 
 export default PrintShopDashboard;

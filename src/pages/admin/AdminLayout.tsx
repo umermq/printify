@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link, Outlet, useLocation, Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { RoleGuard } from "@/components/RoleGuard";
 import {
   LayoutDashboard, ShoppingBag, Users, Package, Settings, BarChart3,
   ChevronLeft, ChevronRight, Image, Layers, LogOut, Bell, Search,
@@ -28,22 +28,9 @@ const contentLinks = [
   { label: "Contact Submissions", icon: MessageSquare, to: "/admin/contacts" },
 ];
 
-const AdminLayout = () => {
+const AdminLayoutInner = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
 
   const isActive = (to: string) => {
     if (to === "/admin") return location.pathname === "/admin";
@@ -113,5 +100,11 @@ const AdminLayout = () => {
     </div>
   );
 };
+
+const AdminLayout = () => (
+  <RoleGuard role="admin">
+    <AdminLayoutInner />
+  </RoleGuard>
+);
 
 export default AdminLayout;
