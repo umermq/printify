@@ -64,8 +64,12 @@ const SEOPage = () => {
     setRegenLoading(p.id);
     const seo = await generateFor(p);
     if (seo) {
-      updateProduct(p.id, { seo });
-      toast({ title: "Optimized", description: p.name });
+      try {
+        await updateProduct(p.id, { seo });
+        toast({ title: "Optimized", description: p.name });
+      } catch (err) {
+        toast({ title: "Save failed", description: (err as Error).message, variant: "destructive" });
+      }
     }
     setRegenLoading(null);
   };
@@ -81,7 +85,13 @@ const SEOPage = () => {
     for (let i = 0; i < missing.length; i++) {
       const p = missing[i];
       const seo = await generateFor(p);
-      if (seo) updateProduct(p.id, { seo });
+      if (seo) {
+        try {
+          await updateProduct(p.id, { seo });
+        } catch (err) {
+          toast({ title: "Save failed", description: `${p.name}: ${(err as Error).message}`, variant: "destructive" });
+        }
+      }
       setBulkProgress({ done: i + 1, total: missing.length });
       await new Promise((r) => setTimeout(r, 600));
     }
@@ -100,11 +110,15 @@ const SEOPage = () => {
     });
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editing) return;
-    updateProduct(editing.id, { seo: { ...form, updatedAt: new Date().toISOString() } });
-    toast({ title: "SEO saved", description: editing.name });
-    setEditing(null);
+    try {
+      await updateProduct(editing.id, { seo: { ...form, updatedAt: new Date().toISOString() } });
+      toast({ title: "SEO saved", description: editing.name });
+      setEditing(null);
+    } catch (err) {
+      toast({ title: "Save failed", description: (err as Error).message, variant: "destructive" });
+    }
   };
 
   const regenInDialog = async () => {

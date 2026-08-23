@@ -42,24 +42,36 @@ const ProductsPage = () => {
     setDialogOpen(true);
   };
 
-  const save = () => {
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
     if (!form.name || !form.categorySlug) return;
     const cat = categories.find(c => c.slug === form.categorySlug);
     const updated = { ...form, category: cat?.name || form.category };
-    if (editingProduct) {
-      updateProduct(editingProduct.id, updated);
-      toast({ title: "Product updated", description: `${form.name} saved.` });
-    } else {
-      const newP: Product = { ...updated, id: `prod-${Date.now()}` };
-      addProduct(newP);
-      toast({ title: "Product added", description: `${form.name} created.` });
+    setSaving(true);
+    try {
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, updated);
+        toast({ title: "Product updated", description: `${form.name} saved.` });
+      } else {
+        await addProduct(updated);
+        toast({ title: "Product added", description: `${form.name} created.` });
+      }
+      setDialogOpen(false);
+    } catch (err) {
+      toast({ title: "Save failed", description: (err as Error).message, variant: "destructive" });
+    } finally {
+      setSaving(false);
     }
-    setDialogOpen(false);
   };
 
-  const deleteProduct = (id: string) => {
-    removeProduct(id);
-    toast({ title: "Product deleted" });
+  const deleteProduct = async (id: string) => {
+    try {
+      await removeProduct(id);
+      toast({ title: "Product deleted" });
+    } catch (err) {
+      toast({ title: "Delete failed", description: (err as Error).message, variant: "destructive" });
+    }
   };
 
   const updateSize = (idx: number, key: "label" | "price", val: string | number) => {
@@ -193,7 +205,7 @@ const ProductsPage = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={save}>{editingProduct ? "Save Changes" : "Add Product"}</Button>
+            <Button onClick={save} disabled={saving}>{saving ? "Saving..." : editingProduct ? "Save Changes" : "Add Product"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

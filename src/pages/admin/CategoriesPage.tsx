@@ -20,22 +20,35 @@ const CategoriesPage = () => {
   const openAdd = () => { setEditing(null); setForm({ name: "", slug: "", description: "", icon: "📦", productCount: 0 }); setDialogOpen(true); };
   const openEdit = (c: Category) => { setEditing(c); setForm({ name: c.name, slug: c.slug, description: c.description, icon: c.icon, productCount: c.productCount }); setDialogOpen(true); };
 
-  const save = () => {
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
     if (!form.name) return;
     const slug = form.slug || form.name.toLowerCase().replace(/\s+/g, "-");
-    if (editing) {
-      updateCategory(editing.slug, { ...form, slug, image: "" });
-      toast({ title: "Category updated" });
-    } else {
-      addCategory({ ...form, slug, image: "" });
-      toast({ title: "Category added" });
+    setSaving(true);
+    try {
+      if (editing) {
+        await updateCategory(editing.slug, { ...form, slug, image: "" });
+        toast({ title: "Category updated" });
+      } else {
+        await addCategory({ ...form, slug, image: "" });
+        toast({ title: "Category added" });
+      }
+      setDialogOpen(false);
+    } catch (err) {
+      toast({ title: "Save failed", description: (err as Error).message, variant: "destructive" });
+    } finally {
+      setSaving(false);
     }
-    setDialogOpen(false);
   };
 
-  const deleteCat = (slug: string) => {
-    removeCategory(slug);
-    toast({ title: "Category deleted" });
+  const deleteCat = async (slug: string) => {
+    try {
+      await removeCategory(slug);
+      toast({ title: "Category deleted" });
+    } catch (err) {
+      toast({ title: "Delete failed", description: (err as Error).message, variant: "destructive" });
+    }
   };
 
   return (
@@ -85,7 +98,7 @@ const CategoriesPage = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={save}>{editing ? "Save" : "Add Category"}</Button>
+            <Button onClick={save} disabled={saving}>{saving ? "Saving..." : editing ? "Save" : "Add Category"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

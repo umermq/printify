@@ -2,23 +2,15 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import { supabase } from "@/integrations/supabase/client";
 import type { Product, Category } from "@/data/products";
 
-const PRODUCTS_KEY = "pixelcraft_products";
-const CATEGORIES_KEY = "pixelcraft_categories";
-
-function loadStoredProducts(): Product[] | null {
-  try {
-    const raw = localStorage.getItem(PRODUCTS_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return null;
+function slugify(s: string): string {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "item";
 }
 
-function loadStoredCategories(): Category[] | null {
-  try {
-    const raw = localStorage.getItem(CATEGORIES_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return null;
+function uniqueSlug(base: string, taken: string[]): string {
+  if (!taken.includes(base)) return base;
+  let i = 2;
+  while (taken.includes(`${base}-${i}`)) i++;
+  return `${base}-${i}`;
 }
 
 async function fetchCatalogFromSupabase(): Promise<{ products: Product[]; categories: Category[] }> {
@@ -74,100 +66,167 @@ async function fetchCatalogFromSupabase(): Promise<{ products: Product[]; catego
 interface ProductContextType {
   products: Product[];
   categories: Category[];
-  addProduct: (p: Product) => void;
-  updateProduct: (id: string, updates: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
-  setProducts: (products: Product[]) => void;
-  addCategory: (c: Category) => void;
-  updateCategory: (slug: string, updates: Partial<Category>) => void;
-  deleteCategory: (slug: string) => void;
-  setCategories: (categories: Category[]) => void;
+  loading: boolean;
+  addProduct: (p: Omit<Product, "id">) => Promise<void>;
+  updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  addCategory: (c: Category) => Promise<void>;
+  updateCategory: (slug: string, updates: Partial<Category>) => Promise<void>;
+  deleteCategory: (slug: string) => Promise<void>;
 }
 
 const ProductContext = createContext<ProductContextType | null>(null);
 
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
-  const storedProducts = loadStoredProducts();
-  const storedCategories = loadStoredCategories();
-  const [products, setProductsState] = useState<Product[]>(storedProducts ?? []);
-  const [categories, setCategoriesState] = useState<Category[]>(storedCategories ?? []);
-  const [loaded, setLoaded] = useState(storedProducts !== null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Seed from Supabase on first load if there's no local admin-edited copy yet
+  const refresh = useCallback(async () => {
+    const { products, categories } = await fetchCatalogFromSupabase();
+    setProducts(products);
+    setCategories(categories);
+  }, []);
+
   useEffect(() => {
-    if (loaded) return;
     let active = true;
     fetchCatalogFromSupabase().then(({ products, categories }) => {
       if (!active) return;
-      setProductsState(products);
-      setCategoriesState(categories);
-      setLoaded(true);
+      setProducts(products);
+      setCategories(categories);
+      setLoading(false);
     });
     return () => {
       active = false;
     };
-  }, [loaded]);
+  }, []);
 
-  // Persist products
-  useEffect(() => {
-    if (!loaded) return;
-    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
-  }, [products, loaded]);
+  const addProduct = useCallback(async (p: Omit<Product, "id">) => {
+    const { data: category, error: catError } = await supabase.from("categories").select("id").eq("slug", p.categorySlug).single();
+    if (catError || !category) throw new Error("Select a valid category");
+    const slug = uniqueSlug(slugify(p.name), products.map((x) => x.id));
 
-  // Persist categories
-  useEffect(() => {
-    if (!loaded) return;
-    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
-  }, [categories, loaded]);
+    const { data: inserted, error: productError } = await supabase
+      .from("products")
+      .insert({
+        category_id: category.id,
+        slug,
+        name: p.name,
+        description: p.description,
+        base_price: p.basePrice,
+        delivery_days: p.deliveryDays,
+        image_url: p.image,
+        featured: p.featured,
+      })
+      .select("id")
+      .single();
+    if (productError) throw new Error(productError.message);
 
-  // Cross-tab sync
-  useEffect(() => {
-    const handler = (e: StorageEvent) => {
-      if (e.key === PRODUCTS_KEY && e.newValue) {
-        try { setProductsState(JSON.parse(e.newValue)); } catch {}
+    const productId = inserted.id;
+    if (p.sizes.length) {
+      const { error } = await supabase.from("product_variants").insert(
+        p.sizes.map((s) => ({ product_id: productId, size_label: s.label, price: s.price }))
+      );
+      if (error) throw new Error(error.message);
+    }
+    if (p.themes.length) {
+      const { error } = await supabase.from("product_themes").insert(
+        p.themes.map((t) => ({ product_id: productId, name: t.name, preview: t.preview, image_url: t.image, price_modifier: t.priceModifier ?? 0 }))
+      );
+      if (error) throw new Error(error.message);
+    }
+    await refresh();
+  }, [products, refresh]);
+
+  const updateProduct = useCallback(async (id: string, updates: Partial<Product>) => {
+    const { data: existing, error: findError } = await supabase.from("products").select("id").eq("slug", id).single();
+    if (findError || !existing) throw new Error(findError?.message ?? "Product not found");
+    const productId = existing.id;
+
+    const patch: Record<string, unknown> = {};
+    if (updates.name !== undefined) patch.name = updates.name;
+    if (updates.description !== undefined) patch.description = updates.description;
+    if (updates.basePrice !== undefined) patch.base_price = updates.basePrice;
+    if (updates.deliveryDays !== undefined) patch.delivery_days = updates.deliveryDays;
+    if (updates.image !== undefined) patch.image_url = updates.image;
+    if (updates.featured !== undefined) patch.featured = updates.featured;
+    if (updates.seo !== undefined) patch.seo = updates.seo;
+    if (updates.categorySlug !== undefined) {
+      const { data: cat, error } = await supabase.from("categories").select("id").eq("slug", updates.categorySlug).single();
+      if (error || !cat) throw new Error("Select a valid category");
+      patch.category_id = cat.id;
+    }
+    if (Object.keys(patch).length) {
+      const { error } = await supabase.from("products").update(patch).eq("id", productId);
+      if (error) throw new Error(error.message);
+    }
+
+    if (updates.sizes !== undefined) {
+      const { error: delError } = await supabase.from("product_variants").delete().eq("product_id", productId);
+      if (delError) throw new Error(delError.message);
+      if (updates.sizes.length) {
+        const { error } = await supabase.from("product_variants").insert(
+          updates.sizes.map((s) => ({ product_id: productId, size_label: s.label, price: s.price }))
+        );
+        if (error) throw new Error(error.message);
       }
-      if (e.key === CATEGORIES_KEY && e.newValue) {
-        try { setCategoriesState(JSON.parse(e.newValue)); } catch {}
+    }
+    if (updates.themes !== undefined) {
+      const { error: delError } = await supabase.from("product_themes").delete().eq("product_id", productId);
+      if (delError) throw new Error(delError.message);
+      if (updates.themes.length) {
+        const { error } = await supabase.from("product_themes").insert(
+          updates.themes.map((t) => ({ product_id: productId, name: t.name, preview: t.preview, image_url: t.image, price_modifier: t.priceModifier ?? 0 }))
+        );
+        if (error) throw new Error(error.message);
       }
-    };
-    window.addEventListener("storage", handler);
-    return () => window.removeEventListener("storage", handler);
-  }, []);
+    }
+    await refresh();
+  }, [refresh]);
 
-  const addProduct = useCallback((p: Product) => {
-    setProductsState(prev => [...prev, p]);
-  }, []);
+  const deleteProduct = useCallback(async (id: string) => {
+    const { error } = await supabase.from("products").delete().eq("slug", id);
+    if (error) throw new Error(error.message);
+    await refresh();
+  }, [refresh]);
 
-  const updateProduct = useCallback((id: string, updates: Partial<Product>) => {
-    setProductsState(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-  }, []);
+  const addCategory = useCallback(async (c: Category) => {
+    const slug = uniqueSlug(c.slug || slugify(c.name), categories.map((x) => x.slug));
+    const { error } = await supabase.from("categories").insert({
+      slug,
+      name: c.name,
+      description: c.description,
+      icon: c.icon,
+      image_url: c.image,
+      sort_order: categories.length,
+    });
+    if (error) throw new Error(error.message);
+    await refresh();
+  }, [categories, refresh]);
 
-  const deleteProduct = useCallback((id: string) => {
-    setProductsState(prev => prev.filter(p => p.id !== id));
-  }, []);
+  const updateCategory = useCallback(async (slug: string, updates: Partial<Category>) => {
+    const patch: Record<string, unknown> = {};
+    if (updates.name !== undefined) patch.name = updates.name;
+    if (updates.description !== undefined) patch.description = updates.description;
+    if (updates.icon !== undefined) patch.icon = updates.icon;
+    if (updates.image !== undefined) patch.image_url = updates.image;
+    if (updates.slug !== undefined) patch.slug = updates.slug;
+    const { error } = await supabase.from("categories").update(patch).eq("slug", slug);
+    if (error) throw new Error(error.message);
+    await refresh();
+  }, [refresh]);
 
-  const setProducts = useCallback((products: Product[]) => {
-    setProductsState(products);
-  }, []);
-
-  const addCategory = useCallback((c: Category) => {
-    setCategoriesState(prev => [...prev, c]);
-  }, []);
-
-  const updateCategory = useCallback((slug: string, updates: Partial<Category>) => {
-    setCategoriesState(prev => prev.map(c => c.slug === slug ? { ...c, ...updates } : c));
-  }, []);
-
-  const deleteCategory = useCallback((slug: string) => {
-    setCategoriesState(prev => prev.filter(c => c.slug !== slug));
-  }, []);
-
-  const setCategories = useCallback((categories: Category[]) => {
-    setCategoriesState(categories);
-  }, []);
+  const deleteCategory = useCallback(async (slug: string) => {
+    const { error } = await supabase.from("categories").delete().eq("slug", slug);
+    if (error) {
+      if (error.code === "23503") throw new Error("This category still has products in it — move or delete them first.");
+      throw new Error(error.message);
+    }
+    await refresh();
+  }, [refresh]);
 
   return (
-    <ProductContext.Provider value={{ products, categories, addProduct, updateProduct, deleteProduct, setProducts, addCategory, updateCategory, deleteCategory, setCategories }}>
+    <ProductContext.Provider value={{ products, categories, loading, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory }}>
       {children}
     </ProductContext.Provider>
   );
