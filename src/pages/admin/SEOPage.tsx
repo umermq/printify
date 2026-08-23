@@ -15,6 +15,10 @@ import type { Product, ProductSEO } from "@/data/products";
 const isOptimized = (p: Product) =>
   !!(p.seo?.metaTitle && p.seo?.metaDescription);
 
+// The seo-generate edge function needs a configured AI provider key that
+// isn't set up on this project yet. Manual editing still works either way.
+const AI_GENERATION_ENABLED = false;
+
 const SEOPage = () => {
   const { products, updateProduct } = useProducts();
   const { toast } = useToast();
@@ -157,7 +161,7 @@ const SEOPage = () => {
       <div className="mt-6">
         <Button
           onClick={handleOptimizeAllMissing}
-          disabled={bulkRunning || stats.missing === 0}
+          disabled={!AI_GENERATION_ENABLED || bulkRunning || stats.missing === 0}
           size="lg"
           className="gap-2"
         >
@@ -173,6 +177,11 @@ const SEOPage = () => {
             </>
           )}
         </Button>
+        {!AI_GENERATION_ENABLED && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            AI generation isn't set up on this project yet — you can still edit meta fields manually below.
+          </p>
+        )}
       </div>
 
       {/* Filters */}
@@ -220,7 +229,8 @@ const SEOPage = () => {
                       <Button
                         size="sm"
                         onClick={() => handleRegenerate(p)}
-                        disabled={regenLoading === p.id || bulkRunning}
+                        disabled={!AI_GENERATION_ENABLED || regenLoading === p.id || bulkRunning}
+                        title={!AI_GENERATION_ENABLED ? "AI generation isn't set up on this project yet" : undefined}
                         className="gap-1"
                       >
                         {regenLoading === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
@@ -267,7 +277,13 @@ const SEOPage = () => {
               <Label>AEO snippet <span className="text-xs text-muted-foreground">(direct answer for ChatGPT / Perplexity / Google AI Overview)</span></Label>
               <Textarea rows={3} value={form.aeoSnippet || ""} onChange={(e) => setForm((f) => ({ ...f, aeoSnippet: e.target.value }))} />
             </div>
-            <Button variant="outline" onClick={regenInDialog} disabled={regenLoading === editing?.id} className="gap-2 w-fit">
+            <Button
+              variant="outline"
+              onClick={regenInDialog}
+              disabled={!AI_GENERATION_ENABLED || regenLoading === editing?.id}
+              title={!AI_GENERATION_ENABLED ? "AI generation isn't set up on this project yet" : undefined}
+              className="gap-2 w-fit"
+            >
               {regenLoading === editing?.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               Regenerate with AI
             </Button>
