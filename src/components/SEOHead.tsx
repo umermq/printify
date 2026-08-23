@@ -10,7 +10,7 @@ interface SEOHeadProps {
   noindex?: boolean;
 }
 
-const BASE_URL = "https://printpal-pk.lovable.app";
+const BASE_URL = "https://pixelcraft.pk";
 
 export const SEOHead = ({
   title,

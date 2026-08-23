@@ -37,4 +37,4 @@ Disallow: /login
 Disallow: /reset-password
 Disallow: /cart
 
-Sitemap: https://printpal-pk.lovable.app/sitemap.xml
+Sitemap: https://pixelcraft.pk/sitemap.xml
