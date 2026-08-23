@@ -1,23 +1,74 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { products as seedProducts, categories as seedCategories, type Product, type Category } from "@/data/products";
+import { supabase } from "@/integrations/supabase/client";
+import type { Product, Category } from "@/data/products";
 
 const PRODUCTS_KEY = "pixelcraft_products";
 const CATEGORIES_KEY = "pixelcraft_categories";
 
-function loadProducts(): Product[] {
+function loadStoredProducts(): Product[] | null {
   try {
     const raw = localStorage.getItem(PRODUCTS_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  return seedProducts;
+  return null;
 }
 
-function loadCategories(): Category[] {
+function loadStoredCategories(): Category[] | null {
   try {
     const raw = localStorage.getItem(CATEGORIES_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  return seedCategories;
+  return null;
+}
+
+async function fetchCatalogFromSupabase(): Promise<{ products: Product[]; categories: Category[] }> {
+  const [{ data: categoryRows }, { data: productRows }, { data: variantRows }, { data: themeRows }] = await Promise.all([
+    supabase.from("categories").select("*").order("sort_order"),
+    supabase.from("products").select("*"),
+    supabase.from("product_variants").select("*"),
+    supabase.from("product_themes").select("*"),
+  ]);
+
+  const categoryById = new Map((categoryRows ?? []).map((c) => [c.id, c]));
+
+  const products: Product[] = (productRows ?? []).map((p) => {
+    const category = categoryById.get(p.category_id);
+    return {
+      id: p.slug,
+      name: p.name,
+      category: category?.name ?? "",
+      categorySlug: category?.slug ?? "",
+      description: p.description ?? "",
+      basePrice: Number(p.base_price),
+      sizes: (variantRows ?? [])
+        .filter((v) => v.product_id === p.id)
+        .map((v) => ({ label: v.size_label, price: Number(v.price) })),
+      themes: (themeRows ?? [])
+        .filter((t) => t.product_id === p.id)
+        .map((t) => ({
+          id: t.id,
+          name: t.name,
+          preview: t.preview ?? "",
+          image: t.image_url ?? "",
+          priceModifier: Number(t.price_modifier),
+        })),
+      deliveryDays: p.delivery_days ?? "",
+      image: p.image_url ?? "",
+      featured: p.featured,
+      seo: (p.seo as Product["seo"]) ?? undefined,
+    };
+  });
+
+  const categories: Category[] = (categoryRows ?? []).map((c) => ({
+    slug: c.slug,
+    name: c.name,
+    description: c.description ?? "",
+    icon: c.icon ?? "",
+    image: c.image_url ?? "",
+    productCount: products.filter((p) => p.categorySlug === c.slug).length,
+  }));
+
+  return { products, categories };
 }
 
 interface ProductContextType {
@@ -36,18 +87,38 @@ interface ProductContextType {
 const ProductContext = createContext<ProductContextType | null>(null);
 
 export const ProductProvider = ({ children }: { children: ReactNode }) => {
-  const [products, setProductsState] = useState<Product[]>(loadProducts);
-  const [categories, setCategoriesState] = useState<Category[]>(loadCategories);
+  const storedProducts = loadStoredProducts();
+  const storedCategories = loadStoredCategories();
+  const [products, setProductsState] = useState<Product[]>(storedProducts ?? []);
+  const [categories, setCategoriesState] = useState<Category[]>(storedCategories ?? []);
+  const [loaded, setLoaded] = useState(storedProducts !== null);
+
+  // Seed from Supabase on first load if there's no local admin-edited copy yet
+  useEffect(() => {
+    if (loaded) return;
+    let active = true;
+    fetchCatalogFromSupabase().then(({ products, categories }) => {
+      if (!active) return;
+      setProductsState(products);
+      setCategoriesState(categories);
+      setLoaded(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, [loaded]);
 
   // Persist products
   useEffect(() => {
+    if (!loaded) return;
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
-  }, [products]);
+  }, [products, loaded]);
 
   // Persist categories
   useEffect(() => {
+    if (!loaded) return;
     localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
-  }, [categories]);
+  }, [categories, loaded]);
 
   // Cross-tab sync
   useEffect(() => {
