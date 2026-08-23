@@ -15,8 +15,9 @@ import type { Product, ProductSEO } from "@/data/products";
 const isOptimized = (p: Product) =>
   !!(p.seo?.metaTitle && p.seo?.metaDescription);
 
-// The seo-generate edge function needs a configured AI provider key that
-// isn't set up on this project yet. Manual editing still works either way.
+// The seo-generate edge function calls Anthropic and needs ANTHROPIC_API_KEY
+// set on the project, plus the function deployed. Flip this to true once
+// that's done. Manual editing works either way.
 const AI_GENERATION_ENABLED = false;
 
 const SEOPage = () => {
