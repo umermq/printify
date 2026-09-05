@@ -26,3 +26,6 @@ dist-ssr
 supabase/.temp
 
 .wrangler
+
+# Local-only business docs and session resume notes — never pushed
+doc files/
