@@ -39,6 +39,20 @@ supabase link --project-ref <your-project-ref>
 supabase db push
 ```
 
+## Shipping a change
+
+One command takes a clean checkout of `main` all the way to a deployed site —
+pull, install, link, migrate, verify the catalog, build and deploy — stopping at
+the first step that fails:
+
+```sh
+./scripts/ship.sh
+```
+
+It needs the [Supabase CLI](https://supabase.com/docs/guides/local-development)
+(`brew install supabase/tap/supabase`) and a wrangler login. Anonymous sign-ins
+stay a manual dashboard switch; the script says why when it finishes.
+
 ## Checking the Supabase connection
 
 If the storefront renders but the collections are empty, run the connectivity check. It
