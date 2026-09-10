@@ -38,3 +38,17 @@ Database schema and RLS policies live in `supabase/migrations/`. Apply them to a
 supabase link --project-ref <your-project-ref>
 supabase db push
 ```
+
+## Checking the Supabase connection
+
+If the storefront renders but the collections are empty, run the connectivity check. It
+probes the live project anonymously — exactly as a visitor's browser does — and reports
+whether each catalog table exists, is readable, and has rows:
+
+```sh
+npm run check:supabase
+```
+
+An empty catalog almost always means the migrations were never pushed to the project the
+`.env` points at, or the deployed bundle was built without those `.env` values (Vite inlines
+them at build time, so `npm run deploy` must run from a checkout that has them).

@@ -14,12 +14,29 @@ function uniqueSlug(base: string, taken: string[]): string {
 }
 
 async function fetchCatalogFromSupabase(): Promise<{ products: Product[]; categories: Category[] }> {
-  const [{ data: categoryRows }, { data: productRows }, { data: variantRows }, { data: themeRows }] = await Promise.all([
+  const [categoryRes, productRes, variantRes, themeRes] = await Promise.all([
     supabase.from("categories").select("*").order("sort_order"),
     supabase.from("products").select("*"),
     supabase.from("product_variants").select("*"),
     supabase.from("product_themes").select("*"),
   ]);
+
+  // Without this the storefront renders an empty catalog for every failure mode —
+  // missing tables, a rejected key, RLS — with nothing to tell them apart.
+  const failures = ([
+    ["categories", categoryRes.error],
+    ["products", productRes.error],
+    ["product_variants", variantRes.error],
+    ["product_themes", themeRes.error],
+  ] as const).filter(([, error]) => error);
+  if (failures.length) {
+    throw new Error(failures.map(([table, error]) => `${table}: ${error!.message}`).join("; "));
+  }
+
+  const { data: categoryRows } = categoryRes;
+  const { data: productRows } = productRes;
+  const { data: variantRows } = variantRes;
+  const { data: themeRows } = themeRes;
 
   const categoryById = new Map((categoryRows ?? []).map((c) => [c.id, c]));
 
@@ -67,6 +84,7 @@ interface ProductContextType {
   products: Product[];
   categories: Category[];
   loading: boolean;
+  error: string | null;
   addProduct: (p: Omit<Product, "id">) => Promise<void>;
   updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
@@ -81,21 +99,32 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     const { products, categories } = await fetchCatalogFromSupabase();
     setProducts(products);
     setCategories(categories);
+    setError(null);
   }, []);
 
   useEffect(() => {
     let active = true;
-    fetchCatalogFromSupabase().then(({ products, categories }) => {
-      if (!active) return;
-      setProducts(products);
-      setCategories(categories);
-      setLoading(false);
-    });
+    fetchCatalogFromSupabase()
+      .then(({ products, categories }) => {
+        if (!active) return;
+        setProducts(products);
+        setCategories(categories);
+        setError(null);
+      })
+      .catch((err: Error) => {
+        if (!active) return;
+        console.error("Could not load the catalog from Supabase:", err.message);
+        setError(err.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
@@ -226,7 +255,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   }, [refresh]);
 
   return (
-    <ProductContext.Provider value={{ products, categories, loading, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory }}>
+    <ProductContext.Provider value={{ products, categories, loading, error, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory }}>
       {children}
     </ProductContext.Provider>
   );

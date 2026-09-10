@@ -6,7 +6,7 @@ import { PageHero } from "@/components/PageHero";
 
 const Products = () => {
   const [searchParams] = useSearchParams();
-  const { products, categories } = useProducts();
+  const { products, categories, loading, error } = useProducts();
   const categoryFilter = searchParams.get("category");
 
   const filtered = categoryFilter
@@ -109,10 +109,15 @@ const Products = () => {
 
         {filtered.length === 0 && (
           <div className="py-24 text-center">
-            <p className="font-serif text-2xl text-muted-foreground">No products found.</p>
-            <Link to="/products" className="mt-6 inline-block text-xs tracking-widest uppercase text-gold hover:opacity-75 transition-opacity">
-              View all products →
-            </Link>
+            <p className="font-serif text-2xl text-muted-foreground">
+              {loading ? "Loading the collection…" : error ? "The collection could not be loaded." : "No products found."}
+            </p>
+            {error && <p className="mt-3 text-xs text-muted-foreground">{error}</p>}
+            {!loading && !error && (
+              <Link to="/products" className="mt-6 inline-block text-xs tracking-widest uppercase text-gold hover:opacity-75 transition-opacity">
+                View all products →
+              </Link>
+            )}
           </div>
         )}
       </div>
