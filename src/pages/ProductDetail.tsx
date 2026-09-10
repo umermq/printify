@@ -20,6 +20,7 @@ const ProductDetail = () => {
   const [selectedTheme, setSelectedTheme] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
 
   if (!product) {
     return (
@@ -58,6 +59,8 @@ const ProductDetail = () => {
     try {
       const newImages = await Promise.all(validFiles.map(fileToDataUrl));
       setUploadedImages((prev) => [...prev, ...newImages]);
+      // The data URLs are only for the preview; these are what get uploaded.
+      setPhotoFiles((prev) => [...prev, ...validFiles]);
       if (newImages.length > 0) {
         toast({ title: "Photos uploaded", description: `${newImages.length} image${newImages.length > 1 ? "s" : ""} ready for your order.` });
       }
@@ -83,6 +86,10 @@ const ProductDetail = () => {
       price: currentPrice,
       image: product.themes[selectedTheme].image || product.image,
       uploadedImages,
+      photoFiles,
+      productDbId: product.dbId,
+      variantId: product.sizes[selectedSize].id,
+      themeId: product.themes[selectedTheme].id,
     });
     toast({ title: "Added to cart", description: `${product.name} × ${quantity}` });
   };

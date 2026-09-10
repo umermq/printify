@@ -19,17 +19,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const apply = (session: Session | null) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      // Guest checkout signs in anonymously so that RLS has a uid to work
+      // with. That is not an account, so the rest of the app — the header,
+      // RoleGuard — must keep treating this visitor as signed out.
+      setUser(session?.user && !session.user.is_anonymous ? session.user : null);
       setLoading(false);
-    });
+    };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => apply(session));
+    supabase.auth.getSession().then(({ data: { session } }) => apply(session));
 
     return () => subscription.unsubscribe();
   }, []);

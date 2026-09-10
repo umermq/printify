@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Eye, X, Printer, ZoomIn, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useOrders, type Order } from "@/contexts/OrderContext";
+import { getOrderPhotoUrls } from "@/lib/orders";
 
 const statuses = ["All", "Pending Confirmation", "Confirmed", "Assigned to Print Shop", "In Design", "Awaiting Customer Approval", "Approved", "Printed", "Shipped", "Delivered", "Cancelled"];
 const printShops = ["Lahore Print House", "Karachi Graphics", "Islamabad Prints", "Peshawar Studio"];
@@ -32,7 +33,25 @@ const OrdersPage = () => {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Order | null>(null);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
+  const [storedPhotos, setStoredPhotos] = useState<string[]>([]);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Orders placed since checkout started writing to Supabase keep their photos
+  // in the private order-images bucket; older ones only have the data URLs that
+  // were copied into the local order store.
+  const supabaseOrderId = selected?.supabaseOrderId;
+  useEffect(() => {
+    setStoredPhotos([]);
+    setPhotoError(null);
+    if (!supabaseOrderId) return;
+
+    let active = true;
+    getOrderPhotoUrls(supabaseOrderId)
+      .then((urls) => { if (active) setStoredPhotos(urls); })
+      .catch((err: Error) => { if (active) setPhotoError(err.message); });
+    return () => { active = false; };
+  }, [supabaseOrderId]);
 
   const filtered = orders.filter(o => {
     const matchTab = activeTab === "All" || o.status === activeTab;
@@ -40,7 +59,9 @@ const OrdersPage = () => {
     return matchTab && matchSearch;
   });
 
-  const selectedImages = selected ? getRenderableImages(selected.images) : [];
+  const selectedImages = storedPhotos.length
+    ? storedPhotos
+    : selected ? getRenderableImages(selected.images) : [];
   const hasLegacyBlobImages = selectedImages.some(isLegacyBlobImage);
 
   const handleUpdateOrder = (id: string, updates: Partial<Order>) => {
@@ -235,6 +256,11 @@ const OrdersPage = () => {
                   {hasLegacyBlobImages && (
                     <p className="mb-3 text-sm text-warning">
                       These are older temporary uploads. If they break after refresh, the customer artwork needs to be uploaded again.
+                    </p>
+                  )}
+                  {photoError && (
+                    <p className="mb-3 text-sm text-destructive">
+                      Could not load this order's uploaded photos: {photoError}
                     </p>
                   )}
                   <div className="flex gap-3 flex-wrap">

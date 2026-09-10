@@ -9,12 +9,14 @@ export interface ProductSEO {
 
 export interface Product {
   id: string;
+  /** Row id in public.products. Only set on catalog loaded from Supabase — order items reference it. */
+  dbId?: string;
   name: string;
   category: string;
   categorySlug: string;
   description: string;
   basePrice: number;
-  sizes: { label: string; price: number }[];
+  sizes: { id?: string; label: string; price: number }[];
   themes: { id: string; name: string; preview: string; image: string; priceModifier?: number }[];
   deliveryDays: string;
   image: string;

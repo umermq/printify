@@ -44,6 +44,7 @@ async function fetchCatalogFromSupabase(): Promise<{ products: Product[]; catego
     const category = categoryById.get(p.category_id);
     return {
       id: p.slug,
+      dbId: p.id,
       name: p.name,
       category: category?.name ?? "",
       categorySlug: category?.slug ?? "",
@@ -51,7 +52,7 @@ async function fetchCatalogFromSupabase(): Promise<{ products: Product[]; catego
       basePrice: Number(p.base_price),
       sizes: (variantRows ?? [])
         .filter((v) => v.product_id === p.id)
-        .map((v) => ({ label: v.size_label, price: Number(v.price) })),
+        .map((v) => ({ id: v.id, label: v.size_label, price: Number(v.price) })),
       themes: (themeRows ?? [])
         .filter((t) => t.product_id === p.id)
         .map((t) => ({

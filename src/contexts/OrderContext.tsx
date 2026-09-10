@@ -2,6 +2,8 @@ import { createContext, useContext, useState, ReactNode, useCallback, useEffect,
 
 export interface Order {
   id: string;
+  /** Row id in public.orders, once the order has been written to Supabase. */
+  supabaseOrderId?: string;
   customer: string;
   email: string;
   phone: string;

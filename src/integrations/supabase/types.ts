@@ -209,6 +209,9 @@ export type Database = {
           address: string | null
           city: string | null
           created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
           id: string
           payment_method: string
           print_shop_id: string | null
@@ -222,6 +225,9 @@ export type Database = {
           address?: string | null
           city?: string | null
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           id?: string
           payment_method?: string
           print_shop_id?: string | null
@@ -235,6 +241,9 @@ export type Database = {
           address?: string | null
           city?: string | null
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           id?: string
           payment_method?: string
           print_shop_id?: string | null

@@ -7,6 +7,7 @@ import { useOrders } from "@/contexts/OrderContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { placeOrder, type CheckoutDetails } from "@/lib/orders";
 import { z } from "zod";
 import { PageHero } from "@/components/PageHero";
 
@@ -25,6 +26,7 @@ const Cart = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [checkingOut, setCheckingOut] = useState(false);
+  const [placing, setPlacing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [form, setForm] = useState({
@@ -50,7 +52,7 @@ const Cart = () => {
   }, []);
   const grandTotal = totalPrice + shippingFee;
 
-  const handleCheckout = (e: React.FormEvent) => {
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = checkoutSchema.safeParse(form);
     if (!result.success) {
@@ -63,32 +65,57 @@ const Cart = () => {
       return;
     }
     setErrors({});
+    setPlacing(true);
 
-    // Create orders in the shared order store
-    items.forEach(item => {
-      const orderId = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
-      addOrder({
-        id: orderId,
-        customer: result.data.name,
-        email: result.data.email || "",
+    try {
+      // The photos only reach the print shop once they are in Supabase Storage,
+      // so nothing is confirmed to the customer until this succeeds.
+      const details: CheckoutDetails = {
+        name: result.data.name,
         phone: result.data.phone,
+        email: result.data.email || "",
+        address: result.data.address,
         city: result.data.city,
-        product: item.name,
-        size: item.size,
-        theme: item.theme,
-        status: "Pending Confirmation",
-        amount: item.price * item.quantity,
-        date: new Date().toISOString().split("T")[0],
-        paymentMethod: result.data.paymentMethod === "cod" ? "COD" : "Online",
-        trackingNumber: "",
-        assignedShop: "",
-        images: item.uploadedImages?.length ? item.uploadedImages : [item.image || "/placeholder.svg"],
-      });
-    });
+        paymentMethod: result.data.paymentMethod,
+      };
+      const supabaseOrderId = await placeOrder(details, items, grandTotal);
 
-    toast({ title: "Order Placed", description: "We'll confirm your order via WhatsApp shortly." });
-    clearCart();
-    navigate("/");
+      // The admin and print-shop views still read the local order store; each
+      // row carries the Supabase id so their photos can be fetched from it.
+      items.forEach(item => {
+        const orderId = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
+        addOrder({
+          id: orderId,
+          supabaseOrderId,
+          customer: result.data.name,
+          email: result.data.email || "",
+          phone: result.data.phone,
+          city: result.data.city,
+          product: item.name,
+          size: item.size,
+          theme: item.theme,
+          status: "Pending Confirmation",
+          amount: item.price * item.quantity,
+          date: new Date().toISOString().split("T")[0],
+          paymentMethod: result.data.paymentMethod === "cod" ? "COD" : "Online",
+          trackingNumber: "",
+          assignedShop: "",
+          images: item.uploadedImages?.length ? item.uploadedImages : [item.image || "/placeholder.svg"],
+        });
+      });
+
+      toast({ title: "Order Placed", description: "We'll confirm your order via WhatsApp shortly." });
+      clearCart();
+      navigate("/");
+    } catch (err) {
+      toast({
+        title: "Could not place your order",
+        description: (err as Error).message,
+        variant: "destructive",
+      });
+    } finally {
+      setPlacing(false);
+    }
   };
 
   if (items.length === 0 && !checkingOut) {
@@ -314,13 +341,18 @@ const Cart = () => {
                   <span>PKR {grandTotal.toLocaleString()}</span>
                 </div>
               </div>
-              <button type="submit" className="btn-luxury mt-6 w-full flex items-center justify-center gap-2">
-                Place Order
+              <button
+                type="submit"
+                disabled={placing}
+                className="btn-luxury mt-6 w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {placing ? "Uploading your photos…" : "Place Order"}
               </button>
               <button
                 type="button"
+                disabled={placing}
                 onClick={() => setCheckingOut(false)}
-                className="mt-3 w-full text-center text-xs tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors"
+                className="mt-3 w-full text-center text-xs tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
               >
                 ← Back to Cart
               </button>

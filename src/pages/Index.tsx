@@ -11,10 +11,10 @@ const fadeUp = (delay = 0) => ({
 });
 
 const features = [
-  { icon: Upload, title: "Upload Your Photos", desc: "Drag, drop, and we'll handle the rest. Compressed for fast uploads on any network." },
-  { icon: Palette, title: "Design Your Way", desc: "Pick sizes, finishes, themes. Live preview as you customize." },
-  { icon: Package, title: "Premium Printing", desc: "Archival inks and quality materials at every branch across Pakistan." },
-  { icon: Truck, title: "Nationwide Delivery", desc: "Cash on Delivery available. Tracked from print shop to your door." },
+  { icon: Upload, title: "Upload Your Photos", desc: "Drag, drop, and we'll handle the rest. Compressed for fast uploads on any network.", href: "/products", cta: "Start uploading" },
+  { icon: Palette, title: "Design Your Way", desc: "Pick sizes, finishes, themes. Live preview as you customize.", href: "/products", cta: "Browse products" },
+  { icon: Package, title: "Premium Printing", desc: "Archival inks and quality materials at every branch across Pakistan.", href: "/about", cta: "About our quality" },
+  { icon: Truck, title: "Nationwide Delivery", desc: "Cash on Delivery available. Tracked from print shop to your door.", href: "/shipping-policy", cta: "Delivery details" },
 ];
 
 const steps = [
@@ -186,13 +186,20 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="group rounded-3xl bg-card p-7 transition-all duration-400 hover:bg-white hover:-translate-y-2 hover:shadow-luxury-hover"
               >
-                <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-amber-warm text-white shadow-md group-hover:scale-110 transition-transform duration-400">
-                  <f.icon className="h-6 w-6" strokeWidth={2} />
-                </div>
-                <h3 className="text-lg font-bold text-foreground">{f.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+                <Link
+                  to={f.href}
+                  className="group flex h-full flex-col rounded-3xl bg-card p-7 transition-all duration-400 hover:bg-white hover:-translate-y-2 hover:shadow-luxury-hover"
+                >
+                  <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-amber-warm text-white shadow-md group-hover:scale-110 transition-transform duration-400">
+                    <f.icon className="h-6 w-6" strokeWidth={2} />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground">{f.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+                  <span className="mt-auto inline-flex items-center gap-1.5 pt-5 text-xs font-semibold tracking-widest uppercase text-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+                    {f.cta} <ArrowRight className="h-3 w-3" strokeWidth={2.5} />
+                  </span>
+                </Link>
               </motion.div>
             ))}
           </div>

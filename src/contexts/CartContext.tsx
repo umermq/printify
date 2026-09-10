@@ -9,7 +9,14 @@ export interface CartItem {
   quantity: number;
   price: number;
   image: string;
+  /** Data URLs, for previewing the photos in the cart. */
   uploadedImages: string[];
+  /** The photos themselves, uploaded to Supabase Storage at checkout. */
+  photoFiles?: File[];
+  /** Row ids in public.products / product_variants / product_themes, for order_items. */
+  productDbId?: string;
+  variantId?: string;
+  themeId?: string;
 }
 
 interface CartContextType {
@@ -31,8 +38,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.id === item.id && i.size === item.size && i.theme === item.theme);
       if (existing) {
+        // The photos are what makes each add distinct, so keep both sets rather
+        // than letting the second one fall on the floor.
         return prev.map((i) =>
-          i.id === existing.id ? { ...i, quantity: i.quantity + item.quantity } : i
+          i.id === existing.id
+            ? {
+                ...i,
+                quantity: i.quantity + item.quantity,
+                uploadedImages: [...i.uploadedImages, ...item.uploadedImages],
+                photoFiles: [...(i.photoFiles ?? []), ...(item.photoFiles ?? [])],
+              }
+            : i
         );
       }
       return [...prev, { ...item, id: `${item.id}-${Date.now()}` }];
