@@ -157,6 +157,22 @@ export async function compressForPrint(file: File): Promise<File> {
 }
 
 /**
+ * The photo's pixel dimensions, or null when the browser cannot decode it.
+ * Print quality is judged from these, so "unknown" has to stay tellable from
+ * "small" — a HEIC that Chrome cannot open must not be reported as low
+ * resolution when nobody has actually measured it.
+ */
+export async function readImageSize(file: File): Promise<{ width: number; height: number } | null> {
+  const image = await decode(file);
+  if (!image) return null;
+  try {
+    return { width: image.width, height: image.height };
+  } finally {
+    image.release();
+  }
+}
+
+/**
  * A small data URL for the cart thumbnail and the local order store. Falls
  * back to reading the file as-is when the image cannot be decoded, so the
  * customer still sees something.

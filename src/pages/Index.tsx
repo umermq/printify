@@ -11,7 +11,7 @@ const fadeUp = (delay = 0) => ({
 });
 
 const features = [
-  { icon: Upload, title: "Upload Your Photos", desc: "Drag, drop, and we'll handle the rest. Compressed for fast uploads on any network.", href: "/products", cta: "Start uploading" },
+  { icon: Upload, title: "Upload Your Photos", desc: "Drag, drop, and we'll handle the rest. Compressed for fast uploads on any network.", href: "/create", cta: "Start uploading" },
   { icon: Palette, title: "Design Your Way", desc: "Pick sizes, finishes, themes. Live preview as you customize.", href: "/products", cta: "Browse products" },
   { icon: Package, title: "Premium Printing", desc: "Archival inks and quality materials at every branch across Pakistan.", href: "/about", cta: "About our quality" },
   { icon: Truck, title: "Nationwide Delivery", desc: "Cash on Delivery available. Tracked from print shop to your door.", href: "/shipping-policy", cta: "Delivery details" },
@@ -79,7 +79,7 @@ const Index = () => {
               <Link to="/products" className="btn-luxury">
                 Shop Online <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link to="/products" className="btn-luxury-ghost">
+              <Link to="/create" className="btn-luxury-ghost">
                 Start Designing
               </Link>
             </motion.div>
@@ -391,7 +391,7 @@ const Index = () => {
             <p className="mx-auto mt-6 max-w-md text-base leading-relaxed text-primary-foreground/60">
               Upload your photos. We'll handle printing & delivery. Cash on Delivery available nationwide.
             </p>
-            <Link to="/products" className="btn-gold mt-10 inline-flex">
+            <Link to="/create" className="btn-gold mt-10 inline-flex">
               Start Designing Now <ArrowRight className="h-4 w-4" />
             </Link>
           </motion.div>

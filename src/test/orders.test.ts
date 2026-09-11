@@ -17,13 +17,25 @@ let anonymousSignIn: () => { data: { user: { id: string } | null }; error: { mes
 let uploadResult: () => { error: { message: string } | null };
 
 vi.mock("@/integrations/supabase/client", () => {
-  /** Chainable enough for `.insert(...)`, `.insert(...).select(...).single()` and a bare await. */
+  /**
+   * Chainable enough for `.insert(...)`, `.insert(...).select(...).single()`,
+   * `.insert(...).select(...)` awaited for the inserted rows, and a bare await.
+   *
+   * Inserted rows come back with generated ids in the order they were sent,
+   * which is what lets a caller pair each row id to what it inserted.
+   */
   const insertable = (table: keyof Captured, rows: unknown) => {
     const list = Array.isArray(rows) ? rows : [rows];
+    const firstIndex = captured[table].length;
     captured[table].push(...(list as Record<string, unknown>[]));
+    const inserted = list.map((_, i) => ({ id: `${table}-row-${firstIndex + i}` }));
     const settled = Promise.resolve({ data: null, error: null });
     return {
-      select: () => ({ single: async () => ({ data: { id: ORDER_ID }, error: null }) }),
+      select: () => ({
+        single: async () => ({ data: { id: ORDER_ID }, error: null }),
+        then: (onFulfilled: unknown, onRejected: unknown) =>
+          Promise.resolve({ data: inserted, error: null }).then(onFulfilled as never, onRejected as never),
+      }),
       then: (onFulfilled: unknown, onRejected: unknown) =>
         settled.then(onFulfilled as never, onRejected as never),
     };
@@ -173,5 +185,54 @@ describe("placeOrder", () => {
     await expect(placeOrder(details, [item], 800)).resolves.toBe(ORDER_ID);
     expect(captured.order_items).toHaveLength(0);
     expect(captured.uploads).toHaveLength(0);
+  });
+});
+
+describe("photo to line item linking", () => {
+  it("links each photo to the line item whose size and finish it was ordered at", async () => {
+    await placeOrder(
+      details,
+      [
+        cartItem({ id: "print-4x6", size: '4"x6"', variantId: "v-4x6", photoFiles: [photo("beach.jpg")] }),
+        cartItem({ id: "print-5x7", size: '5"x7"', variantId: "v-5x7", photoFiles: [photo("wedding.jpg")] }),
+      ],
+      1000
+    );
+
+    expect(captured.order_items).toHaveLength(2);
+    expect(captured.order_items[0].variant_id).toBe("v-4x6");
+    expect(captured.order_items[1].variant_id).toBe("v-5x7");
+
+    // Without this the print shop knows five photos and two sizes were bought,
+    // but not which photo goes on which size.
+    expect(captured.order_images.map((row) => row.order_item_id)).toEqual([
+      "order_items-row-0",
+      "order_items-row-1",
+    ]);
+  });
+
+  it("links every photo of a multi-photo item to that same line item", async () => {
+    await placeOrder(
+      details,
+      [cartItem({ photoFiles: [photo("a.jpg"), photo("b.jpg"), photo("c.jpg")] })],
+      2400
+    );
+
+    expect(captured.order_images).toHaveLength(3);
+    expect(new Set(captured.order_images.map((row) => row.order_item_id))).toEqual(
+      new Set(["order_items-row-0"])
+    );
+  });
+
+  it("still uploads photos that belong to no catalog item, attached to the order alone", async () => {
+    await placeOrder(
+      details,
+      [cartItem({ productDbId: undefined, photoFiles: [photo("orphan.jpg")] })],
+      800
+    );
+
+    expect(captured.order_items).toHaveLength(0);
+    expect(captured.uploads).toHaveLength(1);
+    expect(captured.order_images[0].order_item_id).toBeNull();
   });
 });
