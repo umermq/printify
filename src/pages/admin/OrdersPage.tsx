@@ -29,7 +29,7 @@ const statusColor = (s: string) => {
 };
 
 const OrdersPage = () => {
-  const { orders, updateOrder } = useOrders();
+  const { orders, updateOrder, loading, error } = useOrders();
   const [activeTab, setActiveTab] = useState("All");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Order | null>(null);
@@ -65,10 +65,18 @@ const OrdersPage = () => {
     : selected ? getRenderableImages(selected.images) : [];
   const hasLegacyBlobImages = selectedImages.some(isLegacyBlobImage);
 
-  const handleUpdateOrder = (id: string, updates: Partial<Order>) => {
-    updateOrder(id, updates);
+  const handleUpdateOrder = async (id: string, updates: Partial<Order>) => {
+    const restore = selected;
     if (selected?.id === id) setSelected(prev => prev ? { ...prev, ...updates } : null);
-    toast({ title: "Order updated", description: `${id} has been updated.` });
+    try {
+      await updateOrder(id, updates);
+      toast({ title: "Order updated", description: `${id} has been updated.` });
+    } catch (err) {
+      // The change is already undone in the store; undo it here too, so the
+      // panel cannot show a status the database rejected.
+      if (restore?.id === id) setSelected(restore);
+      toast({ title: "Could not update the order", description: (err as Error).message, variant: "destructive" });
+    }
   };
 
   const downloadImage = async (imgUrl: string, filename: string) => {
@@ -149,6 +157,24 @@ const OrdersPage = () => {
           </Button>
         ))}
       </div>
+
+      {/* An empty table means nothing on its own — say which kind of empty it is. */}
+      {loading && (
+        <p className="mt-6 rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-card">
+          Loading orders…
+        </p>
+      )}
+      {!loading && error && (
+        <div className="mt-6 rounded-xl border border-destructive/30 bg-destructive/5 p-6 shadow-card">
+          <p className="text-sm font-semibold text-destructive">Could not load orders</p>
+          <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+        </div>
+      )}
+      {!loading && !error && orders.length === 0 && (
+        <p className="mt-6 rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-card">
+          No orders yet. They appear here as soon as a customer checks out.
+        </p>
+      )}
 
       <div className="mt-6 rounded-xl border border-border bg-card shadow-card overflow-x-auto">
         <table className="w-full text-sm">

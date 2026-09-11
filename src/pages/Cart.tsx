@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Trash2, Minus, Plus, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import { useOrders } from "@/contexts/OrderContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +21,6 @@ const checkoutSchema = z.object({
 
 const Cart = () => {
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
-  const { addOrder } = useOrders();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [checkingOut, setCheckingOut] = useState(false);
@@ -78,43 +76,12 @@ const Cart = () => {
         city: result.data.city,
         paymentMethod: result.data.paymentMethod,
       };
-      const supabaseOrderId = await placeOrder(details, items, grandTotal);
+      await placeOrder(details, items, grandTotal);
 
-      // The admin and print-shop views still read the local order store; the
-      // row carries the Supabase id so its photos can be fetched from it.
-      //
-      // One checkout is one order. This used to add a row per cart line, so a
-      // customer who bought three products appeared in the admin as three
-      // separate orders, each priced as if it were the whole sale.
-      const lines = items.map((item) => ({
-        product: item.name,
-        size: item.size,
-        theme: item.theme,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        images: item.uploadedImages?.length ? item.uploadedImages : [item.image || "/placeholder.svg"],
-      }));
-
-      addOrder({
-        id: `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`,
-        supabaseOrderId,
-        customer: result.data.name,
-        email: result.data.email || "",
-        phone: result.data.phone,
-        city: result.data.city,
-        items: lines,
-        product: lines[0]?.product ?? "",
-        size: lines[0]?.size ?? "",
-        theme: lines[0]?.theme ?? "",
-        status: "Pending Confirmation",
-        amount: grandTotal,
-        shipping: shippingFee,
-        date: new Date().toISOString().split("T")[0],
-        paymentMethod: result.data.paymentMethod === "cod" ? "COD" : "Online",
-        trackingNumber: "",
-        assignedShop: "",
-        images: lines.flatMap((l) => l.images),
-      });
+      // placeOrder has already written the order, its lines and its photos to
+      // Supabase, which is what the admin reads. The shadow copy that used to
+      // be written here only existed in this browser, so nobody else could see
+      // the order, and it drifted from the real one.
 
       toast({ title: "Order Placed", description: "We'll confirm your order via WhatsApp shortly." });
       clearCart();
