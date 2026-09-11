@@ -80,28 +80,40 @@ const Cart = () => {
       };
       const supabaseOrderId = await placeOrder(details, items, grandTotal);
 
-      // The admin and print-shop views still read the local order store; each
-      // row carries the Supabase id so their photos can be fetched from it.
-      items.forEach(item => {
-        const orderId = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
-        addOrder({
-          id: orderId,
-          supabaseOrderId,
-          customer: result.data.name,
-          email: result.data.email || "",
-          phone: result.data.phone,
-          city: result.data.city,
-          product: item.name,
-          size: item.size,
-          theme: item.theme,
-          status: "Pending Confirmation",
-          amount: item.price * item.quantity,
-          date: new Date().toISOString().split("T")[0],
-          paymentMethod: result.data.paymentMethod === "cod" ? "COD" : "Online",
-          trackingNumber: "",
-          assignedShop: "",
-          images: item.uploadedImages?.length ? item.uploadedImages : [item.image || "/placeholder.svg"],
-        });
+      // The admin and print-shop views still read the local order store; the
+      // row carries the Supabase id so its photos can be fetched from it.
+      //
+      // One checkout is one order. This used to add a row per cart line, so a
+      // customer who bought three products appeared in the admin as three
+      // separate orders, each priced as if it were the whole sale.
+      const lines = items.map((item) => ({
+        product: item.name,
+        size: item.size,
+        theme: item.theme,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        images: item.uploadedImages?.length ? item.uploadedImages : [item.image || "/placeholder.svg"],
+      }));
+
+      addOrder({
+        id: `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`,
+        supabaseOrderId,
+        customer: result.data.name,
+        email: result.data.email || "",
+        phone: result.data.phone,
+        city: result.data.city,
+        items: lines,
+        product: lines[0]?.product ?? "",
+        size: lines[0]?.size ?? "",
+        theme: lines[0]?.theme ?? "",
+        status: "Pending Confirmation",
+        amount: grandTotal,
+        shipping: shippingFee,
+        date: new Date().toISOString().split("T")[0],
+        paymentMethod: result.data.paymentMethod === "cod" ? "COD" : "Online",
+        trackingNumber: "",
+        assignedShop: "",
+        images: lines.flatMap((l) => l.images),
       });
 
       toast({ title: "Order Placed", description: "We'll confirm your order via WhatsApp shortly." });
