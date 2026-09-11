@@ -31,6 +31,10 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+let lineCounter = 0;
+/** Unique per cart line, and stable within a session. */
+const nextLineId = () => `${Date.now().toString(36)}-${(lineCounter += 1)}`;
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
@@ -51,7 +55,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             : i
         );
       }
-      return [...prev, { ...item, id: `${item.id}-${Date.now()}` }];
+      // Date.now() alone collides when a batch is added in one tick — the
+      // wizard adds a line per photo — and two lines sharing an id makes
+      // removeItem and updateQuantity hit both.
+      return [...prev, { ...item, id: `${item.id}-${nextLineId()}` }];
     });
   }, []);
 

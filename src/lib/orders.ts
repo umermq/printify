@@ -74,42 +74,63 @@ export async function placeOrder(
   }
   const orderId = order.id;
 
-  const lineItems = items
-    .filter((item) => item.productDbId)
-    .map((item) => ({
-      order_id: orderId,
-      product_id: item.productDbId!,
-      variant_id: item.variantId ?? null,
-      theme_id: item.themeId ?? null,
-      quantity: item.quantity,
-      unit_price: item.price,
-    }));
+  // Insert the items one round-trip, then keep each row id beside the cart
+  // item it came from: a photo is only useful to the print shop if the size
+  // and finish it belongs to travel with it.
+  const withProduct = items.filter((item) => item.productDbId);
 
-  if (lineItems.length) {
-    const { error } = await supabase.from("order_items").insert(lineItems);
+  let insertedItems: { id: string }[] = [];
+  if (withProduct.length) {
+    const { data, error } = await supabase
+      .from("order_items")
+      .insert(
+        withProduct.map((item) => ({
+          order_id: orderId,
+          product_id: item.productDbId!,
+          variant_id: item.variantId ?? null,
+          theme_id: item.themeId ?? null,
+          quantity: item.quantity,
+          unit_price: item.price,
+        }))
+      )
+      .select("id");
     if (error) throw new Error(`Order ${orderId} was created but its items could not be saved: ${error.message}`);
+    insertedItems = data ?? [];
   }
 
-  const photos = items.flatMap((item) => item.photoFiles ?? []);
-  const storageKeys: string[] = [];
+  // PostgREST returns inserted rows in the order they were sent, which is what
+  // pairs each item id back to its cart item. If that ever does not hold the
+  // photos still upload — they just attach to the order rather than the line.
+  const photos: { file: File; orderItemId: string | null }[] = [];
+  withProduct.forEach((item, index) => {
+    for (const file of item.photoFiles ?? []) {
+      photos.push({ file, orderItemId: insertedItems[index]?.id ?? null });
+    }
+  });
+  for (const item of items.filter((i) => !i.productDbId)) {
+    for (const file of item.photoFiles ?? []) photos.push({ file, orderItemId: null });
+  }
 
-  for (const [index, file] of photos.entries()) {
-    const key = `${orderId}/${index + 1}-${crypto.randomUUID()}.${fileExtension(file)}`;
+  const uploaded: { key: string; orderItemId: string | null }[] = [];
+
+  for (const [index, photo] of photos.entries()) {
+    const key = `${orderId}/${index + 1}-${crypto.randomUUID()}.${fileExtension(photo.file)}`;
     const { error } = await supabase.storage
       .from("order-images")
-      .upload(key, file, { contentType: file.type || "image/jpeg", upsert: false });
+      .upload(key, photo.file, { contentType: photo.file.type || "image/jpeg", upsert: false });
     if (error) {
       throw new Error(
         `Order ${orderId} was created, but photo ${index + 1} of ${photos.length} failed to upload: ${error.message}`
       );
     }
-    storageKeys.push(key);
+    uploaded.push({ key, orderItemId: photo.orderItemId });
   }
 
-  if (storageKeys.length) {
+  if (uploaded.length) {
     const { error } = await supabase.from("order_images").insert(
-      storageKeys.map((key) => ({
+      uploaded.map(({ key, orderItemId }) => ({
         order_id: orderId,
+        order_item_id: orderItemId,
         storage_key_preview: key,
         storage_key_print: key,
         source: "device",
