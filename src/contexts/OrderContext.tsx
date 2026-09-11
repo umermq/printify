@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { fetchOrders, updateOrderRow } from "@/lib/adminOrders";
 
 /** One product line within an order. */
 export interface OrderLine {
@@ -61,37 +63,13 @@ export interface DashboardStats {
   recentOrders: Order[];
 }
 
-const STORAGE_KEY = "pixelcraft_orders";
-
-const defaultOrders: Order[] = [
-  { id: "ORD-001", customer: "Ahmed Khan", email: "ahmed@email.com", phone: "0300-1234567", city: "Lahore", product: "Classic Photo Book", size: "10x10", theme: "Classic White", status: "Pending Confirmation", amount: 3500, date: "2026-02-16", paymentMethod: "COD", trackingNumber: "", assignedShop: "", images: ["/placeholder.svg"] },
-  { id: "ORD-002", customer: "Sara Ali", email: "sara@email.com", phone: "0321-9876543", city: "Karachi", product: "Photo Mug", size: "11oz", theme: "Full Wrap", status: "Confirmed", amount: 800, date: "2026-02-16", paymentMethod: "JazzCash", trackingNumber: "", assignedShop: "", images: ["/placeholder.svg"] },
-  { id: "ORD-003", customer: "Usman Tariq", email: "usman@email.com", phone: "0333-5551234", city: "Islamabad", product: "Custom T-Shirt", size: "L", theme: "Front Print", status: "In Design", amount: 1500, date: "2026-02-15", paymentMethod: "COD", trackingNumber: "", assignedShop: "Islamabad Prints", images: ["/placeholder.svg"] },
-  { id: "ORD-004", customer: "Fatima Noor", email: "fatima@email.com", phone: "0345-7778899", city: "Lahore", product: "Photo Cushion", size: '16"x16"', theme: "Single Photo", status: "Shipped", amount: 2200, date: "2026-02-15", paymentMethod: "Easypaisa", trackingNumber: "TRK-99887766", assignedShop: "Lahore Print House", images: ["/placeholder.svg"] },
-  { id: "ORD-005", customer: "Ali Raza", email: "ali@email.com", phone: "0312-4445566", city: "Faisalabad", product: "Wedding Album", size: "12x12", theme: "Elegant Gold", status: "Delivered", amount: 8000, date: "2026-02-13", paymentMethod: "COD", trackingNumber: "TRK-11223344", assignedShop: "Lahore Print House", images: ["/placeholder.svg"] },
-];
-
-function loadOrders(): Order[] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch {}
-  // First time: save defaults
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultOrders)); } catch {}
-  return defaultOrders;
-}
-
-function saveOrders(orders: Order[]) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(orders)); } catch {}
-}
-
 interface OrderContextType {
   orders: Order[];
-  addOrder: (order: Order) => void;
-  updateOrder: (id: string, updates: Partial<Order>) => void;
+  loading: boolean;
+  /** Why the orders could not be loaded, for the admin to see rather than an empty table. */
+  error: string | null;
+  refresh: () => Promise<void>;
+  updateOrder: (id: string, updates: Partial<Order>) => Promise<void>;
   dashboardStats: DashboardStats;
   customers: DerivedCustomer[];
 }
@@ -99,34 +77,48 @@ interface OrderContextType {
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export const OrderProvider = ({ children }: { children: ReactNode }) => {
-  const [orders, setOrders] = useState<Order[]>(loadOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sync across tabs
+  const refresh = useCallback(async () => {
+    try {
+      setOrders(await fetchOrders());
+      setError(null);
+    } catch (err) {
+      // An admin staring at an empty table cannot tell "no orders yet" from
+      // "the query failed", so the reason is kept and shown.
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const handler = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY && e.newValue) {
-        try { setOrders(JSON.parse(e.newValue)); } catch {}
-      }
-    };
-    window.addEventListener("storage", handler);
-    return () => window.removeEventListener("storage", handler);
-  }, []);
+    void refresh();
+    // A sign-in changes which rows RLS will return, so reload on that too.
+    const { data } = supabase.auth.onAuthStateChange(() => { void refresh(); });
+    return () => data.subscription.unsubscribe();
+  }, [refresh]);
 
-  const addOrder = useCallback((order: Order) => {
-    setOrders(prev => {
-      const next = [order, ...prev];
-      saveOrders(next);
-      return next;
-    });
-  }, []);
+  /**
+   * `id` is the batch number the table shows; the write needs the row id it
+   * was derived from. The optimistic update is reverted if the write fails,
+   * so the admin never sees a status that was not saved.
+   */
+  const updateOrder = useCallback(async (id: string, updates: Partial<Order>) => {
+    const target = orders.find(o => o.id === id);
+    if (!target?.supabaseOrderId) throw new Error("This order has no database row to update.");
 
-  const updateOrder = useCallback((id: string, updates: Partial<Order>) => {
-    setOrders(prev => {
-      const next = prev.map(o => o.id === id ? { ...o, ...updates } : o);
-      saveOrders(next);
-      return next;
-    });
-  }, []);
+    const previous = orders;
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
+    try {
+      await updateOrderRow(target.supabaseOrderId, updates);
+    } catch (err) {
+      setOrders(previous);
+      throw err;
+    }
+  }, [orders]);
 
   const dashboardStats = useMemo<DashboardStats>(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -167,7 +159,7 @@ export const OrderProvider = ({ children }: { children: ReactNode }) => {
   }, [orders]);
 
   return (
-    <OrderContext.Provider value={{ orders, addOrder, updateOrder, dashboardStats, customers }}>
+    <OrderContext.Provider value={{ orders, loading, error, refresh, updateOrder, dashboardStats, customers }}>
       {children}
     </OrderContext.Provider>
   );
