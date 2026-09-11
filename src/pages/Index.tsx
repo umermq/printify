@@ -196,7 +196,10 @@ const Index = () => {
                   </div>
                   <h3 className="text-lg font-bold text-foreground">{f.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
-                  <span className="mt-auto inline-flex items-center gap-1.5 pt-5 text-xs font-semibold tracking-widest uppercase text-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+                  {/* Touch devices never hover, so a hover-only CTA leaves the
+                      card looking like dead text. Reveal on hover only where
+                      hovering is actually possible. */}
+                  <span className="mt-auto inline-flex items-center gap-1.5 pt-5 text-xs font-semibold tracking-widest uppercase text-primary transition-opacity duration-300 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-visible:opacity-100">
                     {f.cta} <ArrowRight className="h-3 w-3" strokeWidth={2.5} />
                   </span>
                 </Link>

@@ -1,11 +1,16 @@
 import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Upload, Minus, Plus, ShoppingCart, Truck, Star, Shield } from "lucide-react";
+import { Upload, Minus, Plus, ShoppingCart, Truck, Star, Shield, Loader2 } from "lucide-react";
 import { useProducts } from "@/contexts/ProductContext";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/SEOHead";
+import { compressForPrint, makePreviewDataUrl } from "@/lib/images";
+
+/** Originals can be this big — they are compressed before they ever upload. */
+const MAX_PHOTO_MB = 25;
+const MAX_PHOTO_BYTES = MAX_PHOTO_MB * 1024 * 1024;
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -21,6 +26,8 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [processing, setProcessing] = useState(false);
+  const [dragging, setDragging] = useState(false);
 
   if (!product) {
     return (
@@ -37,41 +44,78 @@ const ProductDetail = () => {
   const currentPrice = product.sizes[selectedSize].price + themeModifier;
   const photosMissing = uploadedImages.length === 0;
 
-  const fileToDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error("Failed to read image"));
-    reader.readAsDataURL(file);
-  });
+  /**
+   * Shared by the file picker and the drop zone. Compressing happens here
+   * rather than at checkout so the customer waits once, while they are still
+   * choosing, instead of on the Place Order button.
+   */
+  const acceptFiles = async (incoming: File[]) => {
+    const images = incoming.filter((file) => file.type.startsWith("image/"));
+    if (incoming.length && !images.length) {
+      toast({ title: "Not an image", description: "Please choose photo files (JPG, PNG, HEIC).", variant: "destructive" });
+      return;
+    }
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const validFiles = Array.from(files).filter((file) => {
-      if (file.size > 10 * 1024 * 1024) {
-        toast({ title: "File too large", description: "Max 10MB per image", variant: "destructive" });
+    const validFiles = images.filter((file) => {
+      if (file.size > MAX_PHOTO_BYTES) {
+        toast({ title: "File too large", description: `${file.name} is over ${MAX_PHOTO_MB}MB.`, variant: "destructive" });
         return false;
       }
       return true;
     });
+    if (!validFiles.length) return;
 
+    setProcessing(true);
     try {
-      const newImages = await Promise.all(validFiles.map(fileToDataUrl));
-      setUploadedImages((prev) => [...prev, ...newImages]);
+      const prepared = await Promise.all(
+        validFiles.map(async (file) => ({
+          original: file,
+          print: await compressForPrint(file),
+          preview: await makePreviewDataUrl(file),
+        }))
+      );
+
+      setUploadedImages((prev) => [...prev, ...prepared.map((p) => p.preview)]);
       // The data URLs are only for the preview; these are what get uploaded.
-      setPhotoFiles((prev) => [...prev, ...validFiles]);
-      if (newImages.length > 0) {
-        toast({ title: "Photos uploaded", description: `${newImages.length} image${newImages.length > 1 ? "s" : ""} ready for your order.` });
-      }
+      setPhotoFiles((prev) => [...prev, ...prepared.map((p) => p.print)]);
+
+      const before = prepared.reduce((sum, p) => sum + p.original.size, 0);
+      const after = prepared.reduce((sum, p) => sum + p.print.size, 0);
+      const saved = before > 0 ? Math.round((1 - after / before) * 100) : 0;
+
+      toast({
+        title: `${prepared.length} photo${prepared.length > 1 ? "s" : ""} ready`,
+        description: saved >= 5
+          ? `Optimised for upload — ${saved}% smaller, full print quality kept.`
+          : "Added to your order.",
+      });
     } catch {
       toast({ title: "Upload failed", description: "Please try your images again.", variant: "destructive" });
+    } finally {
+      setProcessing(false);
     }
+  };
 
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    await acceptFiles(Array.from(files));
     e.target.value = "";
   };
 
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    if (processing) return;
+    await acceptFiles(Array.from(e.dataTransfer.files ?? []));
+  };
+
   const handleAddToCart = () => {
+    // Adding mid-compression would put a partial set of photos in the cart.
+    if (processing) {
+      toast({ title: "Still preparing your photos", description: "One moment — nearly done." });
+      return;
+    }
     if (photosMissing) {
       toast({ title: "Photo required", description: "Please upload at least one photo before adding to cart.", variant: "destructive" });
       return;
@@ -292,17 +336,37 @@ const ProductDetail = () => {
               <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} />
               <button
                 onClick={() => fileRef.current?.click()}
-                className={`flex w-full items-center justify-center gap-2 rounded-lg border border-dashed py-5 text-xs font-medium tracking-widest uppercase transition-all duration-300 ${
-                  photosMissing
-                    ? "border-destructive/60 bg-destructive/5 text-destructive hover:border-destructive"
-                    : "border-gold/50 bg-card text-gold hover:border-gold hover:bg-gold/5"
+                disabled={processing}
+                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragEnter={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={handleDrop}
+                className={`flex w-full flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed py-5 text-xs font-medium tracking-widest uppercase transition-all duration-300 disabled:cursor-wait ${
+                  dragging
+                    ? "border-gold bg-gold/10 text-gold"
+                    : photosMissing
+                      ? "border-destructive/60 bg-destructive/5 text-destructive hover:border-destructive"
+                      : "border-gold/50 bg-card text-gold hover:border-gold hover:bg-gold/5"
                 }`}
               >
-                <Upload className="h-4 w-4" strokeWidth={1.5} />
-                Choose Photos
+                <span className="flex items-center gap-2">
+                  {processing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
+                  ) : (
+                    <Upload className="h-4 w-4" strokeWidth={1.5} />
+                  )}
+                  {processing ? "Optimising…" : dragging ? "Drop to add" : "Choose Photos"}
+                </span>
+                {!processing && !dragging && (
+                  <span className="hidden text-[10px] normal-case tracking-normal opacity-70 sm:block">
+                    or drag &amp; drop them here
+                  </span>
+                )}
               </button>
               <p className={`mt-2 text-xs ${photosMissing ? "text-destructive" : "text-muted-foreground"}`}>
-                {photosMissing ? "* Please upload at least one photo to continue" : "JPG, PNG up to 10MB each"}
+                {photosMissing
+                  ? "* Please upload at least one photo to continue"
+                  : `JPG, PNG, HEIC up to ${MAX_PHOTO_MB}MB each — compressed automatically`}
               </p>
             </div>
 
@@ -330,7 +394,7 @@ const ProductDetail = () => {
               {/* Add to Cart */}
               <button
                 onClick={handleAddToCart}
-                disabled={photosMissing}
+                disabled={photosMissing || processing}
                 className="btn-luxury flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ShoppingCart className="h-4 w-4" strokeWidth={1.5} />
