@@ -3,6 +3,7 @@ import { ShoppingBag, DollarSign, Clock, CheckCircle, TrendingUp } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useOrders } from "@/contexts/OrderContext";
+import { orderSummary } from "@/lib/orderLines";
 
 const statusColors: Record<string, string> = {
   "Pending Confirmation": "bg-warning/10 text-warning",
@@ -67,7 +68,7 @@ const DashboardPage = () => {
                 <tr key={order.id} className="border-b border-border last:border-0 hover:bg-muted/50">
                   <td className="px-5 py-3 font-medium">{order.id}</td>
                   <td className="px-5 py-3">{order.customer}</td>
-                  <td className="px-5 py-3">{order.product}</td>
+                  <td className="px-5 py-3">{orderSummary(order)}</td>
                   <td className="px-5 py-3">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColors[order.status] || "bg-muted text-muted-foreground"}`}>{order.status}</span>
                   </td>

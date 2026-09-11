@@ -1,5 +1,15 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from "react";
 
+/** One product line within an order. */
+export interface OrderLine {
+  product: string;
+  size: string;
+  theme: string;
+  quantity: number;
+  unitPrice: number;
+  images: string[];
+}
+
 export interface Order {
   id: string;
   /** Row id in public.orders, once the order has been written to Supabase. */
@@ -8,15 +18,25 @@ export interface Order {
   email: string;
   phone: string;
   city: string;
+  /**
+   * Every line the customer bought. Absent on orders written before the store
+   * became per-order rather than per-line, and on the seeded demo rows — read
+   * these through orderLines() rather than directly.
+   */
+  items?: OrderLine[];
+  /** Summary of the first line, kept so older single-line rows still render. */
   product: string;
   size: string;
   theme: string;
   status: string;
+  /** Order total, including shipping. */
   amount: number;
+  shipping?: number;
   date: string;
   paymentMethod: string;
   trackingNumber: string;
   assignedShop: string;
+  /** Every photo across every line. */
   images: string[];
 }
 

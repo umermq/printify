@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useOrders, type DerivedCustomer } from "@/contexts/OrderContext";
+import { orderSummary } from "@/lib/orderLines";
 
 const CustomersPage = () => {
   const { customers } = useOrders();
@@ -75,7 +76,7 @@ const CustomersPage = () => {
                     <p className="text-sm font-medium mb-2">Order History</p>
                     {selected.orders.map(o => (
                       <div key={o.id} className="flex items-center justify-between text-sm py-1">
-                        <span>{o.id} — {o.product}</span>
+                        <span>{o.id} — {orderSummary(o)}</span>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs">{o.status}</Badge>
                           <span className="font-medium">Rs. {o.amount.toLocaleString()}</span>

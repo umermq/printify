@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useOrders, type Order } from "@/contexts/OrderContext";
+import { orderLines, orderSummary, orderItemCount } from "@/lib/orderLines";
 import { getOrderPhotoUrls } from "@/lib/orders";
 
 const statuses = ["All", "Pending Confirmation", "Confirmed", "Assigned to Print Shop", "In Design", "Awaiting Customer Approval", "Approved", "Printed", "Shipped", "Delivered", "Cancelled"];
@@ -118,8 +119,8 @@ const OrdersPage = () => {
       <table>
         <tr><th>Customer</th><td>${selected.customer}</td><th>Phone</th><td>${selected.phone}</td></tr>
         <tr><th>Email</th><td>${selected.email}</td><th>City</th><td>${selected.city}</td></tr>
-        <tr><th>Product</th><td>${selected.product}</td><th>Size / Theme</th><td>${selected.size} / ${selected.theme}</td></tr>
-        <tr><th>Amount</th><td>Rs. ${selected.amount.toLocaleString()}</td><th>Payment</th><td>${selected.paymentMethod}</td></tr>
+        ${orderLines(selected).map((l) => `<tr><th>Product</th><td>${l.product} × ${l.quantity}</td><th>Size / Theme</th><td>${l.size} / ${l.theme}</td></tr>`).join("")}
+        <tr><th>Total</th><td>Rs. ${selected.amount.toLocaleString()}</td><th>Payment</th><td>${selected.paymentMethod}</td></tr>
         <tr><th>Status</th><td>${selected.status}</td><th>Tracking</th><td>${selected.trackingNumber || "—"}</td></tr>
         <tr><th>Print Shop</th><td>${selected.assignedShop || "—"}</td><th>Date</th><td>${selected.date}</td></tr>
       </table>
@@ -168,7 +169,10 @@ const OrdersPage = () => {
               <tr key={order.id} className="border-b border-border last:border-0 hover:bg-muted/50 cursor-pointer" onClick={() => setSelected(order)}>
                 <td className="px-4 py-3 font-medium">{order.id}</td>
                 <td className="px-4 py-3">{order.customer}</td>
-                <td className="px-4 py-3">{order.product}</td>
+                <td className="px-4 py-3">
+                  {orderSummary(order)}
+                  <span className="ml-1.5 text-xs text-muted-foreground">({orderItemCount(order)} pcs)</span>
+                </td>
                 <td className="px-4 py-3">
                   <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColor(order.status)}`}>{order.status}</span>
                 </td>
@@ -217,10 +221,23 @@ const OrdersPage = () => {
                     <p className="text-sm text-muted-foreground">{selected.city}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Product</p>
-                    <p className="font-medium">{selected.product}</p>
-                    <p className="text-sm text-muted-foreground">Size: {selected.size} | Theme: {selected.theme}</p>
-                    <p className="text-lg font-bold mt-1">Rs. {selected.amount.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">Items</p>
+                    <ul className="mt-1 space-y-1.5">
+                      {orderLines(selected).map((line, i) => (
+                        <li key={i} className="text-sm">
+                          <span className="font-medium">{line.product}</span>
+                          <span className="text-muted-foreground"> × {line.quantity}</span>
+                          <br />
+                          <span className="text-xs text-muted-foreground">
+                            {line.size}{line.theme ? ` | ${line.theme}` : ""} — Rs. {(line.unitPrice * line.quantity).toLocaleString()}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    {selected.shipping ? (
+                      <p className="mt-2 text-xs text-muted-foreground">Shipping: Rs. {selected.shipping.toLocaleString()}</p>
+                    ) : null}
+                    <p className="text-lg font-bold mt-1">Total: Rs. {selected.amount.toLocaleString()}</p>
                     <Badge variant="outline" className="mt-1">{selected.paymentMethod}</Badge>
                   </div>
                 </div>
