@@ -11,21 +11,21 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
 const sidebarLinks = [
-  { label: "Dashboard", icon: LayoutDashboard, to: "/admin" },
-  { label: "Orders", icon: ShoppingBag, to: "/admin/orders" },
-  { label: "Products", icon: Package, to: "/admin/products" },
-  { label: "SEO / AEO / GEO", icon: Sparkles, to: "/admin/seo" },
-  { label: "Categories", icon: Layers, to: "/admin/categories" },
-  { label: "Customers", icon: Users, to: "/admin/customers" },
-  { label: "Print Shops", icon: Image, to: "/admin/print-shops" },
-  { label: "Reports", icon: BarChart3, to: "/admin/reports" },
-  { label: "Settings", icon: Settings, to: "/admin/settings" },
+  { label: "Dashboard", icon: LayoutDashboard, to: "/printify" },
+  { label: "Orders", icon: ShoppingBag, to: "/printify/orders" },
+  { label: "Products", icon: Package, to: "/printify/products" },
+  { label: "SEO / AEO / GEO", icon: Sparkles, to: "/printify/seo" },
+  { label: "Categories", icon: Layers, to: "/printify/categories" },
+  { label: "Customers", icon: Users, to: "/printify/customers" },
+  { label: "Print Shops", icon: Image, to: "/printify/print-shops" },
+  { label: "Reports", icon: BarChart3, to: "/printify/reports" },
+  { label: "Settings", icon: Settings, to: "/printify/settings" },
 ];
 
 const contentLinks = [
-  { label: "Pages", icon: FileText, to: "/admin/pages" },
-  { label: "FAQs", icon: HelpCircle, to: "/admin/faqs" },
-  { label: "Contact Submissions", icon: MessageSquare, to: "/admin/contacts" },
+  { label: "Pages", icon: FileText, to: "/printify/pages" },
+  { label: "FAQs", icon: HelpCircle, to: "/printify/faqs" },
+  { label: "Contact Submissions", icon: MessageSquare, to: "/printify/contacts" },
 ];
 
 const AdminLayoutInner = () => {
@@ -33,7 +33,7 @@ const AdminLayoutInner = () => {
   const location = useLocation();
 
   const isActive = (to: string) => {
-    if (to === "/admin") return location.pathname === "/admin";
+    if (to === "/printify") return location.pathname === "/printify";
     return location.pathname.startsWith(to);
   };
 

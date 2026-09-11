@@ -40,7 +40,7 @@ const queryClient = new QueryClient();
 
 const AppLayout = () => {
   const location = useLocation();
-  const isDashboard = location.pathname.startsWith("/admin") || location.pathname.startsWith("/print-shop");
+  const isDashboard = location.pathname.startsWith("/printify") || location.pathname.startsWith("/print-shop");
 
   return (
     <>
@@ -62,7 +62,7 @@ const AppLayout = () => {
           <Route path="/faqs" element={<FAQsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/printify" element={<AdminLayout />}>
             <Route index element={<DashboardPage />} />
             <Route path="orders" element={<OrdersPage />} />
             <Route path="products" element={<ProductsPage />} />
@@ -77,11 +77,11 @@ const AppLayout = () => {
             <Route path="seo" element={<SEOPage />} />
           </Route>
           <Route path="/print-shop/*" element={<PrintShopDashboard />} />
-          <Route path="/print-shops" element={<Navigate to="/admin/print-shops" replace />} />
-          <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
-          <Route path="/reports" element={<Navigate to="/admin/reports" replace />} />
-          <Route path="/customers" element={<Navigate to="/admin/customers" replace />} />
-          <Route path="/orders" element={<Navigate to="/admin/orders" replace />} />
+          <Route path="/print-shops" element={<Navigate to="/printify/print-shops" replace />} />
+          <Route path="/settings" element={<Navigate to="/printify/settings" replace />} />
+          <Route path="/reports" element={<Navigate to="/printify/reports" replace />} />
+          <Route path="/customers" element={<Navigate to="/printify/customers" replace />} />
+          <Route path="/orders" element={<Navigate to="/printify/orders" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
