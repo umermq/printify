@@ -46,7 +46,7 @@ const DashboardPage = () => {
       <div className="mt-8 rounded-xl border border-border bg-card shadow-card">
         <div className="flex items-center justify-between border-b border-border p-5">
           <h3 className="text-lg font-semibold">Recent Orders</h3>
-          <Button variant="ghost" size="sm" asChild><Link to="/admin/orders">View All</Link></Button>
+          <Button variant="ghost" size="sm" asChild><Link to="/printify/orders">View All</Link></Button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
