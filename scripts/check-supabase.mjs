@@ -9,7 +9,8 @@
  *   node scripts/check-supabase.mjs
  *
  * Every check prints PASS / FAIL with the HTTP status, so an empty storefront
- * can be told apart from a missing table, a rejected key, or a blocked network.
+ * can be told apart from a missing table, a rejected key, or a blocked network
+ * — and a storefront that browses fine but cannot take an order.
  */
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -73,11 +74,22 @@ try {
   process.exit(1);
 }
 
-const restRoot = await request("/rest/v1/");
+// Ask for a table that cannot exist. PostgREST answers 404 (PGRST205) when it
+// accepted the key and simply has no such table, and 401 when it rejected the
+// key — whatever the table — so this separates the two without depending on
+// any table being present yet.
+//
+// The obvious probe, GET /rest/v1/, cannot: it answers 401 "Only secret API
+// keys can be used for this endpoint" to a perfectly good publishable key,
+// which is indistinguishable from a rejected one.
+const probe = await request("/rest/v1/__connectivity_probe__?select=*&limit=1");
+const keyRejected = probe.status === 401 || probe.status === 403;
 record(
   "API key accepted by PostgREST",
-  restRoot.status !== 401 && restRoot.status !== 403,
-  `HTTP ${restRoot.status}${restRoot.status === 401 ? " — key rejected (wrong key, or publishable keys disabled on this project)" : ""}`
+  !keyRejected,
+  keyRejected
+    ? `HTTP ${probe.status} — key rejected: ${probe.body.slice(0, 160)}`
+    : `HTTP ${probe.status} — PostgREST answered with the schema, not an auth error`
 );
 
 // ---- 3. Catalog tables, as an anonymous visitor ----
@@ -112,7 +124,32 @@ if (counts.products !== null && counts.products > 0) {
   }
 }
 
-// ---- 5. Storage bucket ----
+// ---- 5. Guest checkout ----
+// Every orders and storage policy is written against auth.uid(), and a guest
+// only gets one from signInAnonymously(). With anonymous sign-ins switched off
+// the storefront looks perfectly healthy — catalog loads, cart works — and
+// then every checkout dies on the Place Order button. Reading the setting is
+// enough; actually signing in would leave a junk user behind on every run.
+const authSettings = await request("/auth/v1/settings");
+let anonymousEnabled = null;
+try {
+  anonymousEnabled = Boolean(JSON.parse(authSettings.body)?.external?.anonymous_users);
+} catch {
+  /* not JSON — reported below as unknown */
+}
+if (anonymousEnabled === null) {
+  console.log(`INFO  Guest checkout — could not read auth settings (HTTP ${authSettings.status})`);
+} else {
+  record(
+    "Guest checkout possible (anonymous sign-ins on)",
+    anonymousEnabled,
+    anonymousEnabled
+      ? "enabled"
+      : "disabled — Authentication → Sign In / Providers → Anonymous sign-ins"
+  );
+}
+
+// ---- 6. Storage bucket ----
 // order-images is private by design, so an anonymous key cannot inspect it.
 // Whatever comes back here is information, never a verdict — counting it as a
 // failure would fail a perfectly healthy project.
@@ -133,7 +170,8 @@ if (failed.length) {
       "  1. Migrations never pushed  → supabase link --project-ref <ref> && supabase db push\n" +
       "  2. Tables exist but empty   → the seed migration (20260823000200_seed_catalog.sql) did not run\n" +
       "  3. HTTP 401 on every table  → the publishable key in .env does not belong to this project\n" +
-      "  4. Live site empty, checks pass here → the deployed bundle was built without .env (npm run deploy from a checkout that has it)\n"
+      "  4. Live site empty, checks pass here → the deployed bundle was built without .env (npm run deploy from a checkout that has it)\n" +
+      "  5. Browsing fine, checkout fails → anonymous sign-ins are off, so a guest has no auth.uid() for the orders and storage policies\n"
   );
   process.exit(1);
 }
